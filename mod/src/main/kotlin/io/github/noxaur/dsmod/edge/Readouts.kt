@@ -42,16 +42,6 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud, pr
             repaint()
         }
 
-    var placeholders = false
-        set(value) {
-            if (field == value) return
-            field = value
-            for (i in handed.indices) if (game.readouts[i].hud == null) handed[i] = -1
-            push()
-        }
-
-    val standIns = HashSet<String>()
-
     fun worldChanged() {
         World.worldChanged()
         handed.fill(-1)
@@ -95,10 +85,8 @@ class Readouts(private val game: Game, private val settings: DsModConfig.Hud, pr
             val id = feature.id
             val block = readout.hud ?: when {
                 editing && feature.hasHud -> hud(feature.title) {}
-                placeholders && feature.hasHud && feature.on -> HudBlock(text { muted(feature.title) }, emptyList(), HudLook.CLEAR)
                 else -> null
             }
-            if (readout.hud == null && block != null) standIns += id else standIns -= id
             val order = if (readout.hud == null) handed.size + i else i
             if (block == null) Hud.hide(id) else Hud.show(id, group(id, feature.placement?.value ?: block.dock), block, order = order)
             if (readout.slots.isEmpty()) Slots.clear(id) else Slots.mark(id, readout.slots)

@@ -6,7 +6,7 @@ import io.github.noxaur.dsmod.core.feature.end.protector.protectorspawnbeam.Prot
 import io.github.noxaur.dsmod.core.feature.visuals.camera.thirdperson.Camera
 import io.github.noxaur.dsmod.core.feature.utilities.commandbinds.CommandBinds
 import io.github.noxaur.dsmod.core.feature.utilities.waypoints.Waypoints
-import io.github.noxaur.dsmod.core.feature.menus.betterui.backbuttons.BackButtons
+import io.github.noxaur.dsmod.core.feature.menus.betterui.menutabs.MenuTabs
 import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
 import io.github.noxaur.dsmod.core.feature.inventory.protection.slotlock.SlotLock
 import kotlinx.serialization.descriptors.elementNames
@@ -50,13 +50,13 @@ class SettingsTreeTest {
     fun `a feature in a group runs only while the group is on, and keeps its own switch`() {
         val tree = SettingsTree()
         val group = tree.features.single { it.id == "better-ui" }
-        val back = tree.feature<BackButtons>().feature
-        assertTrue(back.on)
+        val tabs = tree.feature<MenuTabs>().feature
+        assertTrue(tabs.on)
         group.enabled = false
-        assertFalse(back.enabled || back.on)
-        assertTrue(back.switch.value)
+        assertFalse(tabs.enabled || tabs.on)
+        assertTrue(tabs.switch.value)
         group.enabled = true
-        assertTrue(back.on)
+        assertTrue(tabs.on)
     }
 
     @Test

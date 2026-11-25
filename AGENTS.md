@@ -1,6 +1,6 @@
 # ds-mod
 
-ds-mod is a client-side quality-of-life mod for the Dragon Simulator server (dragsim.co), in the spirit of SkyHanni. This repo holds the mod, a backend it talks to over REST, and a website.
+ds-mod is a client-side quality-of-life mod for the Dragon Simulator server (dragsim.co). This repo holds the mod, a backend it talks to over REST, and a website.
 
 ## What makes ds-mod special
 
@@ -8,17 +8,6 @@ We can't compromise on these.
 
 - Simple by default: the core works with no setup, and each advanced feature stays out of the way until the player needs it.
 - Fast and smooth: the mod runs inside the render and tick loops, so a dropped frame is a bug. Measure it, and do not trade it for convenience.
-
-## General principles
-
-- Channel your inner DRY, YAGNI, KISS and SOLID.
-- Build on the shared layer each area already has, such as the capture writer. If it can't do what you need, extend it there.
-- Write real fixes, not bypasses.
-- Keep code in one function unless a part is reused or composable.
-- Before adding complexity for a speculative or vanishingly unlikely race or edge case, explain the concrete failure mode, likelihood and complexity cost to the user and get their buy-in.
-- If a short request has two possible meanings, ask one question before you start.
-- Call a bug fixed only when a test, log or capture shows it.
-- Stop a repeated mistake with a check whose failure prints the fix, never with a sentence in a doc or a skill.
 
 ## Layout
 
@@ -30,9 +19,9 @@ We can't compromise on these.
 | `api/` | `openapi.json`, the REST contract between the mod, the backend and the website | API |
 | `specs/` | TLA+ specs for any project | Formal specs |
 | `scripts/` | Checks that span every project | Checks |
-| `docs/` | Guides for players and contributors, and the reasons behind the code | The `docs` skill |
+| `docs/` | Guides for players and contributors, and the reasons behind the code | Docs |
 
-"Server" means dragsim.co. Our own service is the backend. Skills sit in `.claude/skills/` beside the `AGENTS.md` that names them.
+"Server" means dragsim.co. Our own service is the backend.
 
 ## API
 
@@ -45,7 +34,7 @@ We can't compromise on these.
 
 ## Docs
 
-Before you change an area, read its page in `docs/internals/`. Most code changes need no doc change. Update the page when a change alters a decision it records, or how a player uses a feature, and load the `docs` skill first.
+Before you change an area, read its page in `docs/internals/`. Most code changes need no doc change. Update the page when a change alters a decision it records, or how a player uses a feature.
 
 ## Checks
 
@@ -55,9 +44,26 @@ Before you change an area, read its page in `docs/internals/`. Most code changes
 
 ## Branches and pull requests
 
+- Never make a PR unless the user explicitly asks for one.
 - Use a short branch name of at most three hyphenated words, such as `capture-writer` or `fix-tab-parser`.
-- Make a PR only when asked. Before you create one, load the `pr` skill and follow it. It is mandatory.
+- One request is one PR, with every change it needs across `api/`, the projects, the tests and the docs. Split only when asked. Outside contributions follow [CONTRIBUTING.md](CONTRIBUTING.md#fix-one-problem).
+- Conventional titles for commits and PRs, plain language: `fix(capture): keep removed tab list entries`.
+- Body: the problem in a sentence or two, then how you fixed it, then the evidence: the test, log or capture that shows it works, and the numbers when the change touches a hot path. "Tests pass" is not evidence. Name any decision you changed in `docs/internals/`, so the review checks it. End with the model and harness that did the work.
+- UI changes need before/after screenshots; motion or timing needs a short video. Upload them to the PR, never commit them.
+- Merge `main` into the branch and fix the conflicts yourself.
+- When watching a PR, verify each bot finding against the source, fix the real ones, and dismiss false positives with a written reason. Stay quiet when nothing is new, and stop once the checks and bots are green on the latest commit.
 
 ## Code and residue
 
 - Keep plans, research notes and scratch files outside the worktree.
+
+## Principles
+
+- Write code that is DRY, YAGNI, KISS and SOLID.
+- Reuse the shared layer each area has, such as the capture writer. When it falls short, grow it rather than writing around it.
+- Solve the real problem. A bypass is not a fix.
+- One function holds the code until a piece of it is reused or composes with others.
+- A speculative or vanishingly unlikely race or edge case earns extra complexity only with the user's agreement. First tell them how it would fail, how often, and what handling it costs.
+- If a short request reads two ways, ask one question before starting.
+- A bug counts as fixed once a test, log or capture proves it.
+- When a mistake repeats, add a check that fails with the fix in its message. A sentence in a doc won't stop it.

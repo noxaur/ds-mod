@@ -39,14 +39,3 @@ fun short(value: Double, places: Int): String {
 }
 
 fun secondsLeft(millis: Long): Long = ((millis + 999) / 1000).coerceAtLeast(0)
-
-fun duration(millis: Long, nearest: Boolean = false): String {
-    val minutes = (millis + if (nearest) 30_000 else 59_999) / 60_000
-    val hours = minutes / 60
-    return when {
-        hours >= 24 -> "${hours / 24}d ${hours % 24}h"
-        hours > 0 -> "${hours}h ${minutes % 60}m"
-        minutes > 0 -> "${minutes}m"
-        else -> "<1m"
-    }
-}

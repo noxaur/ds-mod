@@ -3,7 +3,6 @@ package io.github.noxaur.dsmod.gametest
 import io.github.noxaur.dsmod.core.container.MarkStyle
 import io.github.noxaur.dsmod.core.container.SlotStyle
 import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
-import io.github.noxaur.dsmod.core.feature.menus.look.menutheme.MenuTheme
 import io.github.noxaur.dsmod.edge.DsModClient
 import io.github.noxaur.dsmod.edge.SlotArts
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest
@@ -64,24 +63,18 @@ class RarityStylesTest : FabricClientGameTest {
             }
             context.waitTicks(5)
 
-            open(context, world.server, dark = true, "Menu Theme's Charcoal slots did not read as dark")
-            eachStyle(context, "rarity-chest")
-            context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().inventoryStyle.value = SlotStyle(opacity = 50) }
-            context.waitTicks(3)
-            context.takeScreenshot("rarity-chest-frame-half")
-            context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().inventoryStyle.value = SlotStyle() }
-            close(context)
-
-            context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = false }
             open(context, world.server, dark = false, "Vanilla's gray slots read as dark")
             eachStyle(context, "rarity-vanilla-chest")
+            context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().inventoryStyle.value = SlotStyle(opacity = 50) }
+            context.waitTicks(3)
+            context.takeScreenshot("rarity-vanilla-chest-frame-half")
+            context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().inventoryStyle.value = SlotStyle() }
             close(context)
             darkChest(context, on = true)
             open(context, world.server, dark = true, "The dark chest pack did not read as dark")
             eachStyle(context, "rarity-dark-chest")
             close(context)
             darkChest(context, on = false)
-            context.runOnClient<Nothing> { DsModClient.feature<MenuTheme>().feature.enabled = true }
 
             eachStyle(context, "rarity-hotbar")
             context.runOnClient<Nothing> { DsModClient.feature<ItemRarity>().markCommon.value = false }

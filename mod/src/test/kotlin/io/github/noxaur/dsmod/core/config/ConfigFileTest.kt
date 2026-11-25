@@ -30,22 +30,14 @@ import io.github.noxaur.dsmod.core.feature.visuals.etherwarpoutline.EtherwarpOut
 import io.github.noxaur.dsmod.core.feature.visuals.camera.freelook.FreeLook
 import io.github.noxaur.dsmod.core.feature.visuals.world.fullbright.Fullbright
 import io.github.noxaur.dsmod.core.feature.visuals.world.hideexplosions.HideExplosions
-import io.github.noxaur.dsmod.core.feature.hud.inventoryhud.InventoryHud
-import io.github.noxaur.dsmod.core.feature.hud.inventoryhud.InventoryLook
-import io.github.noxaur.dsmod.core.feature.hud.inventoryhud.InventoryRow
 import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.PetLook
 import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.PetPosition
 import io.github.noxaur.dsmod.core.feature.utilities.chat.profileviewer.ProfileViewer
-import io.github.noxaur.dsmod.core.feature.hud.layout.chathudeditor.ChatHudEditor
 import io.github.noxaur.dsmod.core.feature.hud.layout.hudbackground.HudBackground
 import io.github.noxaur.dsmod.core.feature.inventory.protection.armorswapguard.ArmorSwapGuard
-import io.github.noxaur.dsmod.core.feature.menus.betterui.backbuttons.BackButtons
-import io.github.noxaur.dsmod.core.feature.menus.look.fixedmenulayout.FixedMenuLayout
-import io.github.noxaur.dsmod.core.feature.menus.look.hideglasspanes.HideGlassPanes
 import io.github.noxaur.dsmod.core.feature.inventory.itemrarity.ItemRarity
-import io.github.noxaur.dsmod.core.feature.menus.look.keepcursor.KeepCursor
+import io.github.noxaur.dsmod.core.feature.menus.keepcursor.KeepCursor
 import io.github.noxaur.dsmod.core.feature.menus.betterui.menutabs.MenuTabs
-import io.github.noxaur.dsmod.core.feature.menus.look.menutheme.MenuTheme
 import io.github.noxaur.dsmod.core.feature.inventory.protection.slotlock.SlotLock
 import io.github.noxaur.dsmod.core.feature.inventory.items.raredropalert.RareDropAlert
 import io.github.noxaur.dsmod.core.feature.combat.slayers.slayerbossalert.SlayerBossAlert
@@ -55,7 +47,6 @@ import io.github.noxaur.dsmod.core.hand.HandStyle
 import io.github.noxaur.dsmod.core.hud.HudDock
 import io.github.noxaur.dsmod.core.input.CommandBind
 import io.github.noxaur.dsmod.core.input.Where
-import io.github.noxaur.dsmod.core.ui.MenuLook
 import io.github.noxaur.dsmod.core.ui.MenuTab
 import io.github.noxaur.dsmod.core.ui.Section
 import io.github.noxaur.dsmod.core.ui.TabEdge
@@ -121,11 +112,6 @@ class ConfigFileTest {
             assertEquals(EquipmentLook.HOTBAR, look.value)
             assertEquals(HudDock.RIGHT_OF_HOTBAR, placement.value)
         }
-        tree.feature<InventoryHud>().run {
-            assertTrue(feature.enabled)
-            assertEquals(listOf(InventoryRow.HOTBAR, InventoryRow.TOP), shownRows.value)
-            assertEquals(InventoryLook.INVENTORY, look.value)
-        }
         tree.feature<EtherwarpOutline>().run {
             assertFalse(feature.enabled || failed.value || throughWalls.value)
             assertEquals(BoxStyle.FILLED, style.value)
@@ -165,12 +151,7 @@ class ConfigFileTest {
             assertFalse(hotbarMatches.value || hotbarMarks.value)
             assertTrue(markCommon.value)
         }
-        tree.feature<MenuTheme>().run {
-            assertFalse(feature.enabled)
-            assertEquals(MenuLook.GLASS, menuLook.value)
-            assertEquals(35f, glassOpacity.value)
-        }
-        tree.assertOff(FixedMenuLayout::class.java, HideGlassPanes::class.java, KeepCursor::class.java)
+        tree.assertOff(KeepCursor::class.java)
         tree.feature<SlotLock>().run {
             assertFalse(feature.enabled)
             assertEquals(74, slotLockKey.value)
@@ -178,7 +159,7 @@ class ConfigFileTest {
         }
         assertTrue(tree.feature<ArmorSwapGuard>().feature.enabled)
 
-        assertFalse(tree.features.single { it.id == "better-ui" }.switch.value || tree.feature<BackButtons>().feature.switch.value || tree.feature<MenuTabs>().feature.switch.value)
+        assertFalse(tree.features.single { it.id == "better-ui" }.switch.value || tree.feature<MenuTabs>().feature.switch.value)
         assertEquals(
             listOf(MenuTab(TabEdge.TOP, 2, "bazaar", "minecraft:gold_ingot", "Bazaar"), MenuTab(TabEdge.BOTTOM, 6, item = "", tooltip = "Search", search = true)),
             tree.feature<MenuTabs>().tabs.value,
@@ -195,7 +176,7 @@ class ConfigFileTest {
             assertEquals(Theme.VANILLA, theme.value)
             assertEquals(1.75f, scale.value)
         }
-        tree.assertOff(ChatHudEditor::class.java, HudBackground::class.java)
+        tree.assertOff(HudBackground::class.java)
 
         assertTrue(tree.feature<ReportGameData>().feature.enabled)
     }

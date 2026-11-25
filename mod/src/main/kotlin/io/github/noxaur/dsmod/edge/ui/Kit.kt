@@ -72,7 +72,6 @@ object Kit {
 
     const val BUTTON_HEIGHT = 16
     const val SLOT_SIZE = 18
-    const val RESULT_SLOT_SIZE = 26
     const val BAR_HEIGHT = 6
     const val SCROLLBAR_WIDTH = 6
     data class Frame(val x: Int, val y: Int) {
@@ -90,7 +89,6 @@ object Kit {
     const val GAP = 4
     const val INSET = 7
     const val INVENTORY_WIDTH = 176
-    const val INVENTORY_HEIGHT = 166
     const val TAB_BAR_HEIGHT = 18
     const val NEW_TAB_WIDTH = TabStrip.NEW
     const val SWITCH_WIDTH = 22
@@ -126,31 +124,21 @@ object Kit {
         frame(g, x, y, width, height, fade(t.outline, alpha), fade(t.panel, alpha), fade(t.panelLight, alpha), fade(t.panelShade, alpha))
     }
 
-    fun stemPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, stemX: Int, stemWidth: Int, stemHeight: Int, glass: Int = -1) {
+    fun stemPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, stemX: Int, stemWidth: Int, stemHeight: Int) {
         val t = theme
-        if (stemX < x + 3 || stemX + stemWidth > x + width - 3) {
-            return if (glass >= 0) glass(g, x, y, width, height + stemHeight, glass) else panel(g, x, y, width, height + stemHeight)
-        }
+        if (stemX < x + 3 || stemX + stemWidth > x + width - 3) return panel(g, x, y, width, height + stemHeight)
         val bottom = y + height
         val right = stemX + stemWidth
-        val face = if (glass >= 0) ARGB.color(glass, t.plate) else t.panel
-        if (glass != 0) {
-            rect(g, x + 1, y + 1, width - 2, height - 2, face)
-            rect(g, stemX, bottom - 1, stemWidth, 1, face)
-            rect(g, stemX + 1, bottom, stemWidth - 2, stemHeight - 1, face)
-        }
-        if (glass < 0) {
-            rect(g, x + 1, y + 1, width - 3, 1, t.panelLight)
-            rect(g, x + 1, y + 1, 1, height - 3, t.panelLight)
-            rect(g, stemX + 1, bottom, 1, stemHeight - 2, t.panelLight)
-            rect(g, x + width - 2, y + 2, 1, height - 3, t.panelShade)
-            rect(g, x + 2, bottom - 2, stemX - x - 2, 1, t.panelShade)
-            rect(g, right, bottom - 2, x + width - 2 - right, 1, t.panelShade)
-            rect(g, right - 1, bottom - 1, 1, 1, t.panelShade)
-            rect(g, right - 2, bottom, 1, stemHeight - 1, t.panelShade)
-            rect(g, stemX + 2, bottom + stemHeight - 2, stemWidth - 3, 1, t.panelShade)
-        }
-        val edge = if (glass >= 0) t.plateEdge else t.outline
+        litFace(g, x, y, width, height - 2, t.panel, t.panelLight, t.panelShade)
+        rect(g, stemX, bottom - 1, stemWidth, 1, t.panel)
+        rect(g, stemX + 1, bottom, stemWidth - 2, stemHeight - 1, t.panel)
+        rect(g, stemX + 1, bottom, 1, stemHeight - 2, t.panelLight)
+        rect(g, x + 2, bottom - 2, stemX - x - 2, 1, t.panelShade)
+        rect(g, right, bottom - 2, x + width - 2 - right, 1, t.panelShade)
+        rect(g, right - 1, bottom - 1, 1, 1, t.panelShade)
+        rect(g, right - 2, bottom, 1, stemHeight - 1, t.panelShade)
+        rect(g, stemX + 2, bottom + stemHeight - 2, stemWidth - 3, 1, t.panelShade)
+        val edge = t.outline
         rect(g, x + 1, y, width - 2, 1, edge)
         rect(g, x, y + 1, 1, height - 2, edge)
         rect(g, x + width - 1, y + 1, 1, height - 2, edge)
@@ -161,24 +149,21 @@ object Kit {
         rect(g, stemX + 1, bottom + stemHeight - 1, stemWidth - 2, 1, edge)
     }
 
-    fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, label: String, labelWidth: Int, glass: Boolean = false) {
-        buttonFace(g, x, y, width, height, state, glass)
+    fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, label: String, labelWidth: Int) {
+        face(g, x, y, width, height, state)
         val dy = if (state == State.DOWN) 1 else 0
         val lx = x + (width - labelWidth) / 2
         val ly = y + (height - 8) / 2 + dy
-        label(g, label, lx, ly, if (state == State.OFF) Ink.OFF else Ink.NORMAL, glass)
+        label(g, label, lx, ly, if (state == State.OFF) Ink.OFF else Ink.NORMAL)
     }
 
-    fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, icon: Icon, glass: Boolean = false) {
-        buttonFace(g, x, y, width, height, state, glass)
+    fun button(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, icon: Icon) {
+        face(g, x, y, width, height, state)
         val t = theme
         val off = state == State.OFF
         val dy = if (state == State.DOWN) 1 else 0
-        val ink = when {
-            glass -> if (off) GLASS_INK_OFF else GLASS_INK
-            else -> if (off) t.inkOff else t.ink
-        }
-        icon(g, icon, x + (width - icon.width) / 2, y + (height - icon.height) / 2 + dy, ink, !off && (glass || t.inkShadow))
+        val ink = if (off) t.inkOff else t.ink
+        icon(g, icon, x + (width - icon.width) / 2, y + (height - icon.height) / 2 + dy, ink, !off && t.inkShadow)
     }
 
     fun well(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
@@ -205,7 +190,6 @@ object Kit {
             val t = theme
             if (t === slotTheme) return@end
             slotTexture = paintSlot(slotTexture, SLOT_TEXTURE, t.slot, t.slotShade, t.slotLight)
-            glassSlotTexture = paintSlot(glassSlotTexture, GLASS_SLOT_TEXTURE, glassFace(t), glassShade(t), glassLight(t))
             slotTheme = t
         }
         Ticks.end { if (!colorsPainted) paintColors() }
@@ -274,74 +258,17 @@ object Kit {
         return texture
     }
 
-    fun slotGrid(g: GuiGraphicsExtractor, x: Int, y: Int, columns: Int, rows: Int, glass: Boolean) {
+    fun slotGrid(g: GuiGraphicsExtractor, x: Int, y: Int, columns: Int, rows: Int) {
         if (theme === slotTheme && columns <= SLOT_GRID_COLUMNS && rows <= SLOT_GRID_ROWS) {
-            return slotBlit(g, if (glass) GLASS_SLOT_TEXTURE else SLOT_TEXTURE, x, y, OPAQUE, columns * SLOT_SIZE, rows * SLOT_SIZE)
+            return slotBlit(g, SLOT_TEXTURE, x, y, OPAQUE, columns * SLOT_SIZE, rows * SLOT_SIZE)
         }
-        for (row in 0 until rows) for (column in 0 until columns) slotFrame(g, x + column * SLOT_SIZE, y + row * SLOT_SIZE, glass)
-    }
-
-    fun glass(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int) {
-        val t = theme
-        if (alpha > 0) rect(g, x + 1, y + 1, width - 2, height - 2, ARGB.color(alpha, t.plate))
-        ring(g, x, y, width, height, t.plateEdge)
-    }
-
-    fun glassWell(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
-        val t = theme
-        bevel(g, x, y, width, height, glassFace(t), glassShade(t), glassLight(t))
-    }
-
-    fun slotFrame(g: GuiGraphicsExtractor, x: Int, y: Int, glass: Boolean?, size: Int = SLOT_SIZE, alpha: Int = OPAQUE) {
-        when (glass) {
-            null -> {}
-            false -> slot(g, x, y, size, alpha)
-            true -> glassSlot(g, x, y, size, alpha)
-        }
-    }
-
-    fun glassSlot(g: GuiGraphicsExtractor, x: Int, y: Int, size: Int = SLOT_SIZE, alpha: Int = OPAQUE) {
-        if (alpha <= 0) return
-        if (size != SLOT_SIZE || theme !== slotTheme) return glassWell(g, x, y, size, size)
-        slotBlit(g, GLASS_SLOT_TEXTURE, x, y, alpha)
-    }
-
-    fun glassTab(
-        g: GuiGraphicsExtractor, x: Int, panelY: Int, selected: Boolean, alpha: Int, edge: TabEdge = TabEdge.TOP,
-        hovered: Boolean = false, width: Int = TAB_WIDTH,
-    ): Int {
-        val t = theme
-        val color = if (hovered) t.hoverOutline else t.plateEdge
-        val fill = ARGB.color(alpha, t.plate)
-        val out = if (selected) TAB_HEIGHT - 2 else TAB_HEIGHT - 4
-        val inner = width - 2
-        if (edge == TabEdge.BOTTOM) {
-            if (alpha > 0) rect(g, x + 1, panelY, inner, out - 1, fill)
-            rect(g, x, panelY, 1, out - 1, color)
-            rect(g, x + width - 1, panelY, 1, out - 1, color)
-            rect(g, x + 1, panelY + out - 1, inner, 1, color)
-            return if (selected) panelY + 1 else panelY
-        }
-        val top = panelY - out
-        if (alpha > 0) rect(g, x + 1, top + 1, inner, out - 1, fill)
-        tabOutline(g, x, top, width, out - 1, color)
-        return panelY - TAB_HEIGHT + if (selected) 4 else 5
+        for (row in 0 until rows) for (column in 0 until columns) slot(g, x + column * SLOT_SIZE, y + row * SLOT_SIZE)
     }
 
     private fun tabOutline(g: GuiGraphicsExtractor, x: Int, top: Int, width: Int, side: Int, color: Int) {
         rect(g, x + 1, top, width - 2, 1, color)
         rect(g, x, top + 1, 1, side, color)
         rect(g, x + width - 1, top + 1, 1, side, color)
-    }
-
-    private fun glassFace(t: Theme) = ARGB.color(GLASS_FACE_ALPHA, t.outline)
-    private fun glassShade(t: Theme) = ARGB.color(GLASS_SHADE_ALPHA, t.outline)
-    private fun glassLight(t: Theme) = ARGB.color(GLASS_LIGHT_ALPHA, t.plateEdge)
-
-    fun tooltip(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int) {
-        val t = theme
-        rect(g, x - 3, y - 3, width + 6, height + 6, ARGB.color(TOOLTIP_ALPHA, t.plate))
-        ring(g, x - 4, y - 4, width + 8, height + 8, t.plateEdge)
     }
 
     fun hotbar(g: GuiGraphicsExtractor, x: Int, y: Int, cells: Int) {
@@ -376,13 +303,10 @@ object Kit {
 
     fun bar(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, fraction: Float, color: Int) {
         well(g, x, y, width, BAR_HEIGHT)
-        barFill(g, x + 1, y + 1, ((width - 2) * fraction).roundToInt(), 4, color)
-    }
-
-    fun barFill(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, color: Int) {
-        rect(g, x, y, width, height, color)
-        stripe(g, x, y, width, color, ARGB.white(1f), 0.45f)
-        if (height > 2) stripe(g, x, y + height - 1, width, color, ARGB.black(1f), 0.35f)
+        val filled = ((width - 2) * fraction).roundToInt()
+        rect(g, x + 1, y + 1, filled, 4, color)
+        stripe(g, x + 1, y + 1, filled, color, ARGB.white(1f), 0.45f)
+        stripe(g, x + 1, y + 4, filled, color, ARGB.black(1f), 0.35f)
     }
 
     fun scrollbar(g: GuiGraphicsExtractor, x: Int, y: Int, height: Int, thumbY: Int, thumbHeight: Int) {
@@ -390,9 +314,8 @@ object Kit {
         thumb(g, x + 1, y + 1 + thumbY, SCROLLBAR_WIDTH - 2, thumbHeight, State.IDLE)
     }
 
-    fun thumb(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, glass: Boolean = false) {
+    fun thumb(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         val t = theme
-        if (glass) return glassFace(g, x, y, width, height, if (state == State.DOWN) State.HOVER else state)
         val face = when (state) {
             State.OFF -> t.panel
             State.IDLE -> t.thumb
@@ -405,44 +328,6 @@ object Kit {
         }
         bevel(g, x, y, width, height, face, light, if (state == State.OFF) t.panelShade else t.raisedShade)
     }
-
-    fun arrow(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, fraction: Float, color: Int, down: Boolean = false, glass: Boolean = false) {
-        val length = if (down) height else width
-        val breadth = if (down) width else height
-        val head = (breadth + 1) / 2
-        var thick = maxOf(2, breadth / 3)
-        if ((breadth - thick) % 2 != 0) thick++
-        arrowPart(g, x, y, length, length - head, breadth, thick, down, sunk(glass))
-        arrowPart(g, x, y, (length * fraction.coerceIn(0f, 1f)).roundToInt(), length - head, breadth, thick, down, color)
-    }
-
-    private fun arrowPart(g: GuiGraphicsExtractor, x: Int, y: Int, upTo: Int, shaft: Int, breadth: Int, thick: Int, down: Boolean, color: Int) {
-        arrowRun(g, x, y, 0, minOf(upTo, shaft), (breadth - thick) / 2, thick, down, color)
-        for (i in 0 until upTo - shaft) arrowRun(g, x, y, shaft + i, 1, i, breadth - 2 * i, down, color)
-    }
-
-    private fun arrowRun(g: GuiGraphicsExtractor, x: Int, y: Int, at: Int, length: Int, offset: Int, size: Int, down: Boolean, color: Int) =
-        if (down) rect(g, x + offset, y + at, size, length, color) else rect(g, x + at, y + offset, length, size, color)
-
-    fun flame(g: GuiGraphicsExtractor, x: Int, y: Int, fraction: Float, color: Int, glass: Boolean = false) {
-        val empty = sunk(glass)
-        val lit = FLAME_SIZE - (FLAME_SIZE * fraction.coerceIn(0f, 1f)).roundToInt()
-        for (row in 0 until FLAME_SIZE) {
-            val from = FLAME[row * 2]
-            rect(g, x + from, y + row, FLAME[row * 2 + 1] - from, 1, if (row >= lit) color else empty)
-        }
-    }
-
-    fun bubbles(g: GuiGraphicsExtractor, x: Int, y: Int, fraction: Float, color: Int, glass: Boolean = false) {
-        val empty = sunk(glass)
-        val lit = BUBBLES_HEIGHT - (BUBBLES_HEIGHT * fraction.coerceIn(0f, 1f)).roundToInt()
-        for (i in 0 until BUBBLES.size / 2) {
-            val top = BUBBLES[i * 2 + 1]
-            rect(g, x + BUBBLES[i * 2], y + top, BUBBLE, BUBBLE, if (top >= lit) color else empty)
-        }
-    }
-
-    private fun sunk(glass: Boolean) = if (glass) glassFace(theme) else theme.well
 
     fun tab(g: GuiGraphicsExtractor, x: Int, panelY: Int, selected: Boolean, edge: TabEdge = TabEdge.TOP, hovered: Boolean = false, width: Int = TAB_WIDTH): Int =
         tab(g, x, panelY, selected, edge, hovered, width, TAB_HEIGHT)
@@ -535,18 +420,19 @@ object Kit {
             val y = lineY - 16
             val edge = if (state == State.DOWN) t.hoverOutline else t.outline
             tabOutline(g, x, y, width, 16, edge)
-            rect(g, x + 1, y + 1, width - 2, 16, t.panel)
-            rect(g, x + 1, y + 1, width - 3, 1, t.panelLight)
-            rect(g, x + 1, y + 1, 1, 15, t.panelLight)
-            rect(g, x + width - 2, y + 2, 1, 14, t.panelShade)
+            litFace(g, x, y, width, 16, t.panel, t.panelLight, t.panelShade, shadeHeight = 14)
             return
         }
         val y = lineY - 15
         tabOutline(g, x, y, width, 14, t.outline)
-        rect(g, x + 1, y + 1, width - 2, 14, if (state == State.HOVER) t.hover else t.tabOff)
-        rect(g, x + 1, y + 1, width - 3, 1, t.panelShade)
-        rect(g, x + 1, y + 1, 1, 13, t.panelShade)
-        rect(g, x + width - 2, y + 2, 1, 13, t.wellShade)
+        litFace(g, x, y, width, 14, if (state == State.HOVER) t.hover else t.tabOff, t.panelShade, t.wellShade)
+    }
+
+    private fun litFace(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, face: Int, light: Int, shade: Int, shadeHeight: Int = height - 1) {
+        rect(g, x + 1, y + 1, width - 2, height, face)
+        rect(g, x + 1, y + 1, width - 3, 1, light)
+        rect(g, x + 1, y + 1, 1, height - 1, light)
+        rect(g, x + width - 2, y + 2, 1, shadeHeight, shade)
     }
 
     fun checkbox(g: GuiGraphicsExtractor, x: Int, y: Int, checked: Boolean, state: State) {
@@ -718,11 +604,6 @@ object Kit {
         g.text(font, text, x, y, color(ink), ink != Ink.OFF && theme.inkShadow)
     }
 
-    fun label(g: GuiGraphicsExtractor, text: String, x: Int, y: Int, ink: Ink, glass: Boolean) {
-        if (!glass) return label(g, text, x, y, ink)
-        g.text(font, text, x, y, if (ink == Ink.OFF) GLASS_INK_OFF else GLASS_INK, ink != Ink.OFF)
-    }
-
     fun label(g: GuiGraphicsExtractor, text: Marked, x: Int, y: Int, ink: Ink = Ink.NORMAL) {
         for (i in text.parts.indices) label(g, text.parts[i], x + text.offsets[i], y, if (text.matches[i]) Ink.MATCH else ink)
     }
@@ -760,39 +641,10 @@ object Kit {
         rect(g, x + 17, y - 1, 1, 18, color)
     }
 
-    fun held(g: GuiGraphicsExtractor, x: Int, y: Int, vanilla: Boolean) =
-        slotBorder(g, x, y, if (vanilla) Theme.VANILLA.accent else theme.accent)
-
     fun slotArt(g: GuiGraphicsExtractor, x: Int, y: Int, atlas: Atlas, cell: Int, row: Int = 0, opacity: Int = 100) = g.blit(
         RenderPipelines.GUI_TEXTURED, atlas.id, x - 1, y - 1, (cell * SlotArt.SIZE).toFloat(), (row * SlotArt.SIZE).toFloat(), SlotArt.SIZE, SlotArt.SIZE,
         atlas.width, atlas.height, ARGB.white((opacity.coerceIn(0, 100) * 255 + 50) / 100),
     )
-
-    fun slotAt(g: GuiGraphicsExtractor, x: Int, y: Int, alpha: Int = OPAQUE) {
-        if (alpha > 0) g.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, x, y, EMPTY_SLOT_U, EMPTY_SLOT_V, SLOT_SIZE, SLOT_SIZE, 256, 256, ARGB.white(alpha))
-    }
-
-    fun inventoryPanel(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, alpha: Int = OPAQUE) {
-        if (alpha <= 0) return
-        val color = ARGB.white(alpha)
-        val c = PANEL_CORNER
-        val w = width - 2 * c
-        val h = height - 2 * c
-        val right = INVENTORY_WIDTH - c
-        val bottom = INVENTORY_HEIGHT - c
-        fun part(dx: Int, dy: Int, u: Int, v: Int, width: Int, height: Int, regionWidth: Int, regionHeight: Int) = g.blit(
-            RenderPipelines.GUI_TEXTURED, INVENTORY, x + dx, y + dy, u.toFloat(), v.toFloat(), width, height, regionWidth, regionHeight, 256, 256, color,
-        )
-        part(0, 0, 0, 0, c, c, c, c)
-        part(c, 0, c, 0, w, c, 1, c)
-        part(c + w, 0, right, 0, c, c, c, c)
-        part(0, c, 0, c, c, h, c, 1)
-        part(c, c, c, c, w, h, 1, 1)
-        part(c + w, c, right, c, c, h, c, 1)
-        part(0, c + h, 0, bottom, c, c, c, c)
-        part(c, c + h, c, bottom, w, c, 1, c)
-        part(c + w, c + h, right, bottom, c, c, c, c)
-    }
 
     fun slotDim(g: GuiGraphicsExtractor, x: Int, y: Int) = rect(g, x, y, 16, 16, ARGB.color(DIM_ALPHA, theme.well))
 
@@ -816,10 +668,6 @@ object Kit {
         }
     }
 
-    fun buttonFace(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State, glass: Boolean) {
-        if (glass) glassFace(g, x, y, width, height, state) else face(g, x, y, width, height, state)
-    }
-
     fun focusRing(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
         if (state == State.HOVER || state == State.DOWN) ring(g, x - 1, y - 1, width + 2, height + 2, theme.hoverOutline)
     }
@@ -829,21 +677,6 @@ object Kit {
     }
 
     private fun stripe(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, color: Int, tint: Int, amount: Float) = rect(g, x, y, width, 1, mix(color, tint, amount))
-
-    private fun glassFace(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, state: State) {
-        val t = theme
-        when (state) {
-            State.IDLE, State.HOVER -> {
-                val hover = state == State.HOVER
-                frame(g, x, y, width, height, if (hover) t.hoverOutline else t.plateEdge, ARGB.white(if (hover) GLASS_BUTTON_HOVER else GLASS_BUTTON), glassLight(t), glassShade(t))
-            }
-            State.DOWN -> {
-                ring(g, x, y, width, height, t.plateEdge)
-                glassWell(g, x + 1, y + 1, width - 2, height - 2)
-            }
-            State.OFF -> ring(g, x, y, width, height, t.plateEdge)
-        }
-    }
 
     private fun frame(g: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, outline: Int, face: Int, light: Int, shade: Int) {
         ring(g, x, y, width, height, outline)
@@ -902,15 +735,6 @@ object Kit {
     private val SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/slot")
     private val HIGHLIGHT_BACK: Identifier = Identifier.withDefaultNamespace("container/slot_highlight_back")
     private val HIGHLIGHT_FRONT: Identifier = Identifier.withDefaultNamespace("container/slot_highlight_front")
-    private val GLASS_SLOT_TEXTURE: Identifier = Identifier.fromNamespaceAndPath("dsmod", "kit/glass_slot")
-    private const val GLASS_FACE_ALPHA = 80
-    private const val GLASS_SHADE_ALPHA = 170
-    private const val GLASS_LIGHT_ALPHA = 140
-
-    val GLASS_INK = Role.BODY.argb()
-    val GLASS_INK_OFF = Role.MUTED.argb()
-    private const val GLASS_BUTTON = 0.16f
-    private const val GLASS_BUTTON_HOVER = 0.3f
 
     private val HOTBAR: Identifier = Identifier.withDefaultNamespace("hud/hotbar")
     private const val GAME_HOTBAR_CELLS = 9
@@ -923,22 +747,10 @@ object Kit {
     private const val SLOT_GRID_WIDTH = SLOT_GRID_COLUMNS * SLOT_SIZE
     private const val SLOT_GRID_HEIGHT = SLOT_GRID_ROWS * SLOT_SIZE
     private var slotTexture: DynamicTexture? = null
-    private var glassSlotTexture: DynamicTexture? = null
     private var slotTheme: Theme? = null
-    private const val TOOLTIP_ALPHA = 240
 
-    private val INVENTORY = Identifier.withDefaultNamespace("textures/gui/container/inventory.png")
 
-    private const val PANEL_CORNER = 4
-
-    private const val EMPTY_SLOT_U = 151f
-    private const val EMPTY_SLOT_V = 119f
-    private const val FLAME_SIZE = 14
-    private val FLAME = intArrayOf(6, 8, 6, 9, 5, 9, 5, 10, 4, 10, 4, 11, 3, 11, 3, 12, 2, 12, 2, 12, 2, 12, 2, 12, 3, 11, 4, 10)
-    const val BUBBLES_HEIGHT = 29
-    private const val BUBBLE = 3
     private const val DARK_BELOW = 90
-    private val BUBBLES = intArrayOf(1, 25, 6, 21, 2, 16, 7, 11, 3, 6, 6, 1)
     private val GOOD = Role.GOOD.argb()
     private val BODY = Role.BODY.argb()
 }

@@ -11,7 +11,6 @@ import io.github.noxaur.dsmod.core.game.Item
 import io.github.noxaur.dsmod.core.game.Pet
 import io.github.noxaur.dsmod.core.game.PetCard
 import io.github.noxaur.dsmod.core.game.PetItem
-import io.github.noxaur.dsmod.core.game.PetProgress
 import io.github.noxaur.dsmod.core.game.ServerSpan
 import io.github.noxaur.dsmod.core.game.ServerText
 import io.github.noxaur.dsmod.core.game.SlotChanged
@@ -61,23 +60,8 @@ class CurrentPetTest {
     }
 
     @Test
-    fun `progress is max level, an XP pair, or a percent, read between the level and the click hint`() {
-        assertEquals(PetProgress.MAX, card("LEVEL 100", "", "MAX LEVEL", "", "ACTIVE", "Click to deactivate!")?.progress)
-        assertEquals(PetProgress(0.25f, 250.0, 1000.0), card("LEVEL 37", "Progress: 25%", "250/1,000", "Click to deactivate!")?.progress)
-        assertEquals(PetProgress(0.5f), card("LEVEL 37", "Progress to Level 38: 50%", "Click to deactivate!")?.progress)
-    }
-
-    @Test
-    fun `the resource pack's glyphs around Held Item, the level and max level are read past`() {
+    fun `the resource pack's glyphs around Held Item are read past`() {
         val read = card("Held Item", "Gold Claws", "", "LEVEL 100", "", "MAX LEVEL", "", "ACTIVE", "Click to deactivate!")
         assertEquals(PetItem("Gold Claws"), read?.held)
-        assertEquals(PetProgress.MAX, read?.progress)
-    }
-
-    @Test
-    fun `lines under the level that hold no progress are handed back unread`() {
-        val read = card("LEVEL 37", "", "Something new", "ACTIVE", "Click to deactivate!")
-        assertNull(read?.progress)
-        assertEquals("Something new", read?.unread)
     }
 }

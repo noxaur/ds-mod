@@ -10,7 +10,7 @@ import io.github.noxaur.dsmod.core.feature.combat.bosses.bosstracer.BossTracer
 import io.github.noxaur.dsmod.core.feature.end.dragon.dragontimer.DragonTimer
 import io.github.noxaur.dsmod.core.feature.end.dragon.eyeguard.EyeGuard
 import io.github.noxaur.dsmod.core.feature.end.protector.protectorstatus.ProtectorStatus
-import io.github.noxaur.dsmod.core.feature.hud.activepet.ActivePet
+import io.github.noxaur.dsmod.core.feature.hud.equipmentdisplay.EquipmentDisplay
 import io.github.noxaur.dsmod.core.feature.general.dsmod.dragsimonly.DragSimOnly
 import io.github.noxaur.dsmod.core.game.Area
 import io.github.noxaur.dsmod.core.game.Boss
@@ -44,7 +44,7 @@ class GameTest : Harness() {
     private fun marks(feature: HasFeature) = readout(feature).marks
 
     private val protector = EntitySeen(36339, "minecraft:iron_golem", text("[Lv100] Endstone Protector 10M/10M"))
-    private val stands = tree.feature<ActivePet>().feature.entityFilters
+    private val stands = tree.feature<EquipmentDisplay>().feature.entityFilters
     private val pet = EntitySeen(12, "minecraft:armor_stand", text("[Lvl 100] Black Cat"))
 
     @Test

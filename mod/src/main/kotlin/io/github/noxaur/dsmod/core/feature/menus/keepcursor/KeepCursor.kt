@@ -1,4 +1,4 @@
-package io.github.noxaur.dsmod.core.feature.menus.look.keepcursor
+package io.github.noxaur.dsmod.core.feature.menus.keepcursor
 
 import io.github.noxaur.dsmod.core.config.DsModConfig
 import io.github.noxaur.dsmod.core.config.Store

@@ -79,7 +79,7 @@ class EquipmentDisplay(config: DsModConfig) : HasFeature {
     )
 
     private var worn = emptyMap<EquipmentPiece, Item>()
-    private val pets = CurrentPet(feature, { block = build() }, { _, card, _ -> if (card != null) block = build() }) { block = build() }
+    private val pets = CurrentPet(feature) { block = build() }
 
     private var shown = settings()
     private var block: HudBlock? = null

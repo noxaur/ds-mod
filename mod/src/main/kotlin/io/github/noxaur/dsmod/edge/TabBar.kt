@@ -82,16 +82,15 @@ object TabBar {
             val tabs = if (chest == null) placed else TabLayout.searchBelow(placed)
             val selected = TabLayout.selected(tabs, Trail.opener(screen))
             val made = ArrayList<Pair<MenuTab, KitTab>>()
-            val glass = { MenuSkin.glass(screen) }
             var search: MenuTab? = null
             var openSearch: () -> Unit = {}
             for ((i, tab) in tabs.withIndex()) {
                 val x = left + TabLayout.x(tab.slot)
                 val widget = if (tab.search) {
                     search = tab
-                    KitTab(x, edgeY(tab.edge), tab.edge, "Search", null, Icon.SEARCH, glass) { openSearch() }
+                    KitTab(x, edgeY(tab.edge), tab.edge, "Search", null, Icon.SEARCH) { openSearch() }
                 } else {
-                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, stackOf(tab.item), null, glass) { PlayerCommands.send(tab.command) }
+                    KitTab(x, edgeY(tab.edge), tab.edge, tab.tooltip.ifBlank { "/${tab.command}" }, stackOf(tab.item), null) { PlayerCommands.send(tab.command) }
                 }
                 widget.selected = i == selected
                 widget.setTooltip(Tooltip.create(tooltip(tab)))
@@ -134,7 +133,6 @@ object TabBar {
                 show()
             }
             close = KitButton(barX() + barWidth - 3 - Kit.BUTTON_HEIGHT, contentY, Icon.CROSS, "Close Search", ::shut)
-            close.glass = { glass() >= 0 }
             close.setTooltip(Tooltip.create(text { action("Click to stop searching.") }.toComponent()))
             openSearch = {
                 open = true
@@ -149,8 +147,7 @@ object TabBar {
 
             ScreenEvents.afterBackground(screen).register { _, graphics, _, _, _ ->
                 if (!field.visible) return@register
-                val alpha = glass()
-                if (alpha < 0) Kit.tab(graphics, barX(), barY, true, bar.edge, width = barWidth) else Kit.glassTab(graphics, barX(), barY, true, alpha, bar.edge, width = barWidth)
+                Kit.tab(graphics, barX(), barY, true, bar.edge, width = barWidth)
             }
             ScreenEvents.afterTick(screen).register {
                 show()

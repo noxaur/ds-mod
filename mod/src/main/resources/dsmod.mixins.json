@@ -9,15 +9,12 @@
     "CaptureInputMixin",
     "CapturePacketsMixin",
     "ChatComponentAccessor",
-    "ChatScreenAccessor",
-    "CommandSuggestionsAccessor",
     "ChestScreenMixin",
     "ContainerScreenAccessor",
     "ContainerScreenMixin",
     "CtrlClickMixin",
     "CursorMixin",
     "DropKeyMixin",
-    "EnchantmentOfferMixin",
     "ExplosionParticleMixin",
     "FloatingTextMixin",
     "FullbrightMixin",
@@ -32,11 +29,6 @@
     "HudHotbarMixin",
     "KeyInputMixin",
     "KeyPressMixin",
-    "MenuBackdropMixin",
-    "MenuArtMixin",
-    "MenuLabelMixin",
-    "MenuPaintMixin",
-    "RecipeButtonMixin",
     "MouseInputMixin",
     "MouseTurnMixin",
     "PerspectiveKeyMixin",
@@ -45,9 +37,7 @@
     "ServerPacketsMixin",
     "SlotClickMixin",
     "StorageMenuMixin",
-    "SuggestionsListAccessor",
-    "SwingSpeedMixin",
-    "TooltipMixin"
+    "SwingSpeedMixin"
   ],
   "injectors": {
     "defaultRequire": 1

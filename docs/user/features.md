@@ -6,7 +6,7 @@
 
 ## General
 
-Theme picks the colors of ds-mod's screens: Charcoal is dark, and Vanilla matches the game's own menus.
+Theme picks the colors of ds-mod's screens and the controls it adds to menus: Charcoal is dark, and Vanilla matches the game's own menus.
 
 ### DragSim Only
 
@@ -34,22 +34,6 @@ Layout is a small copy of your screen with your HUD on it. **Move HUD**, `/dsmod
 
 A dark plate behind ds-mod's HUD, so it reads over a bright world. The Background box in the HUD editor turns it on and off too.
 
-### Chat HUD Editor
-
-Open the chat and move the HUD as it is, without the editor. Point at a block to see its name. A feature that is on but has nothing to show right now, such as the Dragon Timer away from The End, stands in as its outlined name, so you can place it too.
-
-| Do this | To |
-| --- | --- |
-| Drag a block | Move it. It lines up with the screen's edges and middle and with the other blocks |
-| Hold Shift while you drag | Place it without lining up |
-| Press the arrow keys while you hold a block | Nudge it a pixel, or ten with Shift |
-| Press Escape while you hold a block | Put it back where it was |
-| Drop a block near the spot beside the hotbar | Dock it there, as Equipment Display's Placement does. Drag it away to undock it at the same size |
-| Scroll over a block | Make it bigger or smaller. A docked block leaves the dock to change size |
-| Right-click a block | Put it back in the stack at its own size, undocked |
-
-The chat comes first: where its messages, the input or the list of command suggestions lie over a block, clicks and the wheel work on the chat as they always have. What you type still goes into the chat, and the arrow keys move the cursor and recall what you sent unless you hold a block.
-
 ### Hide In F3
 
 Takes ds-mod's HUD off while the F3 debug screen is open, so the HUD doesn't cover the debug text.
@@ -69,41 +53,9 @@ Shows the armor you wear and your pet as a row of icons on the HUD, with each he
 | Equipment Look | Shows the pieces on the HUD's plate, on nothing, or in slots like your hotbar's, which follow your resource pack |
 | Equipment Placement | Keeps the pieces where you put them in the HUD editor, or puts them beside your hotbar, at its size and past your offhand slot. Dragging the pieces out of that spot or into it sets this for you |
 
-### Active Pet
-
-Shows the pet you have out on the HUD: its head, its name and level in the color of its rarity, the pet item it holds, how far it is to its next level, how much XP it gains an hour, and how long until it levels up. It is off until you turn it on. The name and level follow the sidebar, so they change the moment you summon another pet or it levels up, and the block goes when the sidebar says Pet: None. A dungeon's sidebar names no pet, so there the block follows chat, Autopet and the Pets menu: a summon in chat or the menu switches it, and despawning in the menu takes it away.
-
-Open the Pets menu once to fill in the rest. The head and the held item are kept for each pet after that, even across restarts, and change when chat says you gave your pet another item. Until then the head is that of your pet floating beside you. Open the chat and point at the head to read its tooltip.
-
-The XP is read each time you open the Pets menu. Open it again a little later, at the same level, and the block shows your XP per hour and the time to the next level, which counts down. With a combat pet, the XP then moves with each kill, and each time you open the menu it is set right again. Summoning another pet or a level up starts the rate over.
-
-| Setting | Does |
-| --- | --- |
-| Icon | Shows your pet's head beside its name |
-| Held Item | Shows the pet item your pet holds |
-| XP | Shows how far your pet is to its next level, as a bar |
-| XP Rate | Shows how much XP your pet gains an hour, from two reads of the Pets menu |
-| Next Level | Shows how long until your pet reaches its next level at that rate |
-| Hide Autopet | Hides the chat line Autopet sends when it swaps your pet. Off until you turn it on |
-
-### Inventory HUD
-
-Shows the items in your inventory as a grid on the HUD, nine to a row as your inventory holds them, with each stack's count, durability bar and cooldown. Item Rarity colors each slot as it does in your inventory, and with your hotbar in the grid the slot you hold is ringed. The grid steps aside while a menu or your inventory is open, since they show your items already. Open the chat and point at an item to read its tooltip, and move or resize the grid in the HUD editor. Turn it on in HUD.
-
-| Setting | Does |
-| --- | --- |
-| Inventory Rows | Picks which rows show, and their order. The three rows of your inventory show by default, and your hotbar, your armor and your offhand can join them, each set a little apart as your hotbar is in your inventory |
-| Inventory Look | Draws the grid in a panel of slots like your inventory's: in your theme, solid or as glass as Menu Look says, while Menu Theme is on, and as your resource pack draws the inventory while it is off. Plate and Clear show the items alone, on the HUD's plate or on nothing |
-| Inventory Placement | Keeps the grid where you put it in the HUD editor, or puts it beside your hotbar, past your offhand slot, at your GUI's size or smaller where the room there is narrower |
-| Inventory Key | Binds a key that shows and hides the grid. With none, the grid always shows |
-| Inventory Key Mode | Shows the grid only while you hold the key, or switches it with each press |
-| Inventory Layout | Lays each row out across, as your inventory does, or down, so the grid stands tall beside the edge of your screen |
-| Inventory Opacity | Sets how solid the Inventory look's panel and slots are, so the world shows through as much as you like |
-| Pickup Animation | Bobs an item in the grid as it lands in your inventory, as your hotbar does |
-
 ### Performance Stats
 
-Shows your frames per second, your ping and the server's ticks per second on the HUD. Turn it on under HUD in `/dsmod`, and place it in the HUD editor or by dragging it with the chat open, like any other block.
+Shows your frames per second, your ping and the server's ticks per second on the HUD. Turn it on under HUD in `/dsmod`, and place it in the HUD editor, like any other block.
 
 - **FPS** is the game's own count of the frames it drew in the last second.
 - **Ping** is how long the server takes to answer, there and back, as the mean of its last five answers. The tab list always says 0 on Dragon Simulator, so the mod asks the server once a second while Ping is shown, the same way the F3 network chart does. Take Ping out of the values and the mod stops asking.
@@ -337,39 +289,13 @@ A title and a sound when you get a drop of the tier you pick, or better.
 
 ## Menus
 
-### Menu Theme
-
-Menus, your inventory and plain tooltips take the colors of the Theme under General, so Charcoal makes them dark.
-
-The server's Go Back, Close and page arrows become buttons in the same colors.
-
-Set Menu Look to Glass to see the world and your HUD through them instead, and Glass Opacity to choose how dark the glass is. The buttons turn to glass too.
-
-<sub>Every menu of the game follows it, from chests and furnaces to anvils, enchanting tables, beacons, villager trades and the creative inventory, and so does the recipe book's button. Flames, progress arrows, fields and lists keep working in the theme's look. Item tooltips keep the server's rarity frames.</sub>
-
-### Fixed Menu Layout
-
-Go Back and Close sit in the same place in every menu, and so does your inventory. A shorter menu starts lower instead of moving its bottom row.
-
-### Hide Glass Panes
-
-Hides the blank glass panes that pad out a menu, along with their tooltip and hover.
-
-<sub>Colored panes, such as a terminal's, stay.</sub>
-
 ### Keep Cursor
 
 When one menu opens another, the cursor stays where it was instead of jumping to the middle.
 
 ### Better UI
 
-Turns the controls the mod adds to menus on or off at once: Back Buttons, Menu Tabs, SkyBlock Menu Click and HOTD Button. Each has its own switch too. It leaves how menus look alone, so Menu Theme and Fixed Menu Layout stay as you set them.
-
-### Back Buttons
-
-A menu with no Go Back gets one in Go Back's usual place, if you reached it from a menu you opened with a command, such as `/storage`. Clicking it sends that command again. Hover it to see which command it sends.
-
-<sub>A menu you opened from an NPC or an item gets none, because no command reopens it.</sub>
+Turns the controls the mod adds to menus on or off at once: Menu Tabs, SkyBlock Menu Click and HOTD Button. Each has its own switch too.
 
 ### Menu Tabs
 
@@ -411,11 +337,7 @@ Change the keys under Keys in Wardrobe Keys' settings. Each key works only in th
 
 ### Pets Menu
 
-In the Pets menu, your active pet has a green outline, so you can find it among the rest. Turn off Mark Active Pet to hide it.
-
-Press 1 to 9 and 0 to click the first ten pets on the page, counted from the top left, row by row, the same as clicking the pet yourself: on a pet you don't have out it summons it, and on your active pet it puts it away. Each press is one click. Each of those pets shows its key in its bottom right corner, where a stack count goes, since with seven pets to a row, 8 is the first pet on the second row. A press clicks at once once its pet shows in the menu, and a press before that does nothing.
-
-Change the keys under Keys in Pets Menu's settings. Each key works only in the Pets menu, so the numbers still pick your hotbar slot everywhere else.
+In the Pets menu, your active pet has a green outline, so you can find it among the rest.
 
 ### Quieter AFK
 

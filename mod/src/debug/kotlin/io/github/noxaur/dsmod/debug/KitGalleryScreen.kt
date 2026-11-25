@@ -31,7 +31,6 @@ import org.lwjgl.glfw.GLFW
 private const val WIDTH = 575
 private const val HEIGHT = 335
 
-private const val GLASS_BELOW = 2 + 26 + 19
 private const val MIDDLE = 271
 private const val RIGHT = 396
 
@@ -71,14 +70,10 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         text { muted("Eyes: "); value(3); muted(" (1 in 310)") },
         text { muted("Storage: "); warning("80%") },
     ).map { it.toComponent() }
-    private val tooltip = listOf(
-        text { body("Ender Pearl") },
-        text { muted("Stack: "); value(12) },
-    ).map { it.toComponent() }
 
     override fun init() {
         ox = (width - WIDTH) / 2
-        oy = (height - HEIGHT - GLASS_BELOW) / 2
+        oy = (height - HEIGHT) / 2
         val y = oy + 51
         val done = addRenderableWidget(KitButton(ox + Kit.INSET, y, "Done", ::onClose))
         val stepper = addRenderableWidget(KitStepper(done.right + Kit.GAP, y, "Scale", 30) {})
@@ -121,15 +116,9 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
             Kit.checkbox(g, x + 1 + i * 32, oy + 84, true, states[i])
             Kit.checkbox(g, x + 15 + i * 32, oy + 84, false, states[i])
         }
-        Kit.arrow(g, x + 134, oy + 82, 24, 16, 0.5f, Role.BODY.argb())
-        Kit.flame(g, x + 162, oy + 83, 0.6f, Role.WARNING.argb())
         Kit.thumb(g, x + 162, oy + 99, 6, 10, Kit.State.HOVER)
         Kit.thumb(g, x + 170, oy + 99, 6, 10, Kit.State.OFF)
-        Kit.bubbles(g, x + 180, oy + 81, 0.5f, Role.BODY.argb())
-        Kit.arrow(g, x + 196, oy + 82, 9, 28, 0.4f, Role.BODY.argb(), down = true)
         Kit.icon(g, Icon.ARROW, x + 214, oy + 81, t.ink, t.inkShadow)
-        Kit.slot(g, x + 226, oy + 72, Kit.RESULT_SLOT_SIZE)
-        g.item(RESULT, x + 231, oy + 77)
 
         caption(g, "Bars", x, oy + 99)
         Kit.bar(g, x, oy + 111, 60, 0f, Role.GOOD.argb())
@@ -165,8 +154,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
         list(g, ox + RIGHT, oy + 7)
         plate(g, ox + RIGHT, oy + 159)
         skeleton(g, ox + RIGHT + 128, oy + 159)
-        tooltip(g, ox + MIDDLE + 30, oy + 84)
-        glass(g, ox, oy + HEIGHT + 2)
 
         super.extractRenderState(graphics, mouseX, mouseY, partialTick)
     }
@@ -267,22 +254,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
 
     private fun barAt(g: GuiGraphicsExtractor, x: Int, line: Int) = Kit.tabBar(g, x, line - Kit.TAB_BAR_HEIGHT + 1, 278)
 
-    private fun glass(g: GuiGraphicsExtractor, x: Int, y: Int) {
-        val alpha = 153
-        Kit.glass(g, x, y, 240, 26, alpha)
-        g.text(font, "Glass", x + 7, y + 9, Kit.GLASS_INK, true)
-        for (i in 0 until 3) Kit.glassSlot(g, x + 40 + i * 18, y + 4)
-        g.item(tabs[3], x + 41, y + 5)
-        Kit.glassWell(g, x + 98, y + 4, 54, 18)
-        for (i in states.indices) Kit.button(g, x + 156 + i * 20, y + 5, Kit.BUTTON_HEIGHT, Kit.BUTTON_HEIGHT, states[i], Icon.BACK, glass = true)
-        for (i in 0 until 3) g.item(tabs[i], x + 4 + i * 23, Kit.glassTab(g, x + 1 + i * 23, y + 26, i == 0, alpha, TabEdge.BOTTOM, hovered = i == 2))
-    }
-
-    private fun tooltip(g: GuiGraphicsExtractor, x: Int, y: Int) {
-        Kit.tooltip(g, x, y, tooltip.maxOf(font::width), tooltip.size * 10 - 2)
-        for (i in tooltip.indices) g.text(font, tooltip[i], x, y + i * 10, -1, true)
-    }
-
     private fun list(g: GuiGraphicsExtractor, x: Int, y: Int) {
         caption(g, "Well with role text, one line flashed, one blacked out", x, y)
         Kit.well(g, x, y + 12, 172, 122)
@@ -320,7 +291,6 @@ class KitGalleryScreen : Screen(text { body("Kit") }.toComponent()) {
     private companion object {
         val ROLES = listOf(Role.GOOD, Role.BAD, Role.WARNING, Role.VALUE, Role.ACTION, Role.MUTED, Role.LEGENDARY)
         val SWATCHES = listOf(Role.BAD, Role.LEGENDARY, Role.EPIC, Role.GOOD, Role.ACTION, Role.DIVINE)
-        val RESULT = ItemStack(Items.CRAFTING_TABLE)
         val BRAND = text { brand("[ ds-mod ]") }.toComponent()
 
         fun name(state: Kit.State) = state.name.lowercase().replaceFirstChar(Char::uppercase)

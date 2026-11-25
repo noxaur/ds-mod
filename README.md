@@ -24,13 +24,10 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 
 ### HUD
 - **Ability Cooldowns** – Times every item ability, in a list and on the item's slot.
-- **Active Pet** – Shows your pet with its held item, its XP, and how long until it levels up.
 - **Equipment Display** – Shows your armor and pet as icons, on the HUD or beside your hotbar.
-- **Inventory HUD** – Shows your inventory as a grid on the HUD.
 - **Performance Stats** – Shows your FPS, your ping and the server's TPS, with a warning color when they lag.
 - **HUD Background** – A dark plate behind the HUD, so it reads over a bright world.
 - **Hide In F3** – Hides the HUD while the F3 debug screen is open.
-- **Chat HUD Editor** – Move any HUD block with the chat open, or open the full editor with `/dsmod hud`.
 
 ### Chat & Commands
 - **Command Binds** – Send a command with a key, a combo or a sequence. Group, fold and share them.
@@ -46,19 +43,15 @@ I want to bring the popular features from Hypixel SkyBlock mods to Dragon Simula
 - **Armor Swap Guard** – Stops a right click from swapping the armor you wear.
 - **Better UI** – Turns the controls the mod adds to menus on or off at once.
 - **Menu Tabs** – Your own command tabs and an item search in every menu.
-- **Back Buttons** – Adds Go Back to menus that have none.
 - **SkyBlock Menu Click** – Clicking the SkyBlock Menu item opens the menu instead of picking it up.
 - **HOTD Button** – Opens the Heart of the Dragon from the Dragon Sim Menu.
 - **Storage Overview** – Hover a Storage page to see its items, or see every page and the Ender Chest at once.
 - **Forge Craft** – Repeat your last forge craft with a key, one click per press.
 - **HOTD Planner** – Marks what to click next in the Heart of the Dragon for the block you mine.
 - **Wardrobe Keys** – Press 1 to 9 in the Wardrobe to click that slot, once the server lets you.
-- **Pets Menu** – Outlines your active pet in the Pets menu, and 1 to 0 click your first ten pets.
+- **Pets Menu** – Outlines your active pet in the Pets menu.
 - **Quieter AFK** – Dims the screen and mutes audio inside the /afk menu.
 - **Profile Cooldown** – Shows in Profile Management when you can switch profiles again.
-- **Menu Theme** – Dark or glass menus, inventory and tooltips.
-- **Fixed Menu Layout** – Go Back, Close and your inventory sit in the same place in every menu.
-- **Hide Glass Panes** – Hides the blank glass panes that pad out menus.
 - **Keep Cursor** – The cursor stays put when one menu opens another.
 
 ### The End

@@ -317,13 +317,9 @@ class Feature(
         headed: Boolean = true,
         look: HudLook = HudLook.PLATE,
         dock: HudDock = HudDock.FREE,
-        overMenus: Boolean = true,
-        columns: Boolean = false,
-        opacity: Float = 1f,
-        pops: Boolean = false,
         icon: Item? = null,
         rows: HudBuilder.() -> Unit,
-    ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, overMenus, columns, opacity, pops, icon)
+    ) = HudBlock(if (headed) header else text {}, HudBuilder().apply(rows).rows, look, dock, icon)
 
     private companion object {
         val WORDS = mapOf("hud" to "HUD", "ui" to "UI", "dragsim" to "DragSim", "skyblock" to "SkyBlock", "hotd" to "HOTD", "afk" to "AFK")

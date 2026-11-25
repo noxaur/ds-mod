@@ -2,7 +2,6 @@ package io.github.noxaur.dsmod.core.game
 
 import io.github.noxaur.dsmod.core.text.Role
 import io.github.noxaur.dsmod.core.text.count
-import kotlinx.serialization.Serializable
 
 // @keep The sidebar writes the active pet as `Pet: [Lvl 100] Black Cat`, and `Pet: None` when none is out
 data class Pet(val name: String, val level: Int, val rarity: Role) {
@@ -19,16 +18,7 @@ data class Pet(val name: String, val level: Int, val rarity: Role) {
     }
 }
 
-@Serializable
 data class PetItem(val name: String = "", val rarity: Role? = null)
-
-data class PetProgress(val fraction: Float, val xp: Double? = null, val needed: Double? = null) {
-    val max: Boolean get() = this === MAX
-
-    companion object {
-        val MAX = PetProgress(1f)
-    }
-}
 
 /** @keep Its lore names the item it holds under `Held Item`, then `LEVEL 100` and either `MAX LEVEL` or how far it is
  * to the next level, and ends in its rarity and category, as `LEGENDARY COMBAT PET`. dragsim.co draws a rule
@@ -38,10 +28,6 @@ data class PetCard(
     val pet: Pet,
     val icon: Item,
     val held: PetItem?,
-    val progress: PetProgress?,
-    val unread: String? = null,
-    val key: String = pet.name,
-    val category: String? = null,
 ) {
     companion object {
         const val MENU = "Pets"

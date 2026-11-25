@@ -56,8 +56,6 @@ class KitButton private constructor(
         setTooltip(Tooltip.create(plain(label)))
     }
 
-    var glass: () -> Boolean = { false }
-
     override fun onClick(event: MouseButtonEvent, doubleClick: Boolean) {
         pressed = true
         super.onClick(event, doubleClick)
@@ -71,9 +69,9 @@ class KitButton private constructor(
         val state = Kit.state(active, isHoveredOrFocused, pressed && isHovered)
         val icon = icon
         if (icon != null) {
-            Kit.button(graphics, x, y, width, height, state, icon, glass())
+            Kit.button(graphics, x, y, width, height, state, icon)
         } else {
-            Kit.button(graphics, x, y, width, height, state, label, labelWidth, glass())
+            Kit.button(graphics, x, y, width, height, state, label, labelWidth)
         }
     }
 }
@@ -85,7 +83,6 @@ class KitTab(
     name: String,
     private val item: ItemStack?,
     private val icon: Icon?,
-    private val glass: () -> Int = { -1 },
     action: () -> Unit,
 ) : Button(
     x,
@@ -99,14 +96,12 @@ class KitTab(
     var selected = false
 
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val alpha = glass()
-        val top = if (alpha < 0) Kit.tab(graphics, x, panelY, selected, edge, isHoveredOrFocused) else Kit.glassTab(graphics, x, panelY, selected, alpha, edge, isHoveredOrFocused)
+        val top = Kit.tab(graphics, x, panelY, selected, edge, isHoveredOrFocused)
         if (item != null) {
             graphics.item(item, x + (width - 16) / 2, top)
         } else if (icon != null) {
             val t = Kit.theme
-            val ink = if (alpha < 0) t.ink else Kit.GLASS_INK
-            Kit.icon(graphics, icon, x + (width - icon.width) / 2, top + (16 - icon.height) / 2, ink, alpha >= 0 || t.inkShadow)
+            Kit.icon(graphics, icon, x + (width - icon.width) / 2, top + (16 - icon.height) / 2, t.ink, t.inkShadow)
         }
     }
 }
@@ -116,13 +111,11 @@ class KitSlotButton(
     y: Int,
     name: String,
     private val item: ItemStack,
-    private val frame: () -> Boolean?,
     action: () -> Unit,
 ) : Button(x - 1, y - 1, Kit.SLOT_SIZE, Kit.SLOT_SIZE, plain(name), { action() }, { it.get() }) {
     override fun isValidClickButton(button: MouseButtonInfo) = button.button() == 0 || button.button() == 1
 
     override fun extractContents(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
-        Kit.slotFrame(graphics, x, y, frame())
         if (isHoveredOrFocused) Kit.slotHighlightBack(graphics, x + 1, y + 1)
         graphics.item(item, x + 1, y + 1)
         if (isHoveredOrFocused) Kit.slotHighlightFront(graphics, x + 1, y + 1)
@@ -457,8 +450,6 @@ class KitKeysButton(
 
     var clicks = true
 
-    var glass: () -> Boolean = { false }
-
     init {
         this.keys = keys
     }
@@ -511,7 +502,7 @@ class KitKeysButton(
         val prompt = prompt ?: if (max == 1) "Press a key" else "Press keys"
         val text = fit(if (recording) "> ${if (recorded.isEmpty()) prompt else names(recorded)} <" else label, width - 6)
         val state = if (recording) Kit.State.DOWN else Kit.state(active, isHoveredOrFocused, false)
-        Kit.button(graphics, x, y, width, height, state, text, Kit.font.width(text), glass())
+        Kit.button(graphics, x, y, width, height, state, text, Kit.font.width(text))
         clash?.let { Kit.ring(graphics, x - 1, y - 1, width + 2, height + 2, it.argb()) }
     }
 
