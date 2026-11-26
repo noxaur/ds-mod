@@ -1,11 +1,8 @@
-<h1>Dragen&nbsp;&nbsp;<img src="assets/icon.svg" height="40" align="center" alt="The Dragen logo: a raised dragon's head in gold, white and blue"></h1>
-
----
+<h1>Dragen&nbsp;&nbsp;<img src="assets/icon.svg" height="40" align="top" alt="The Dragen logo: a raised dragon's head in gold, white and blue"></h1>
 
 [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/YUZCYAnr7F) [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/noxaur) [![GitHub stars](https://img.shields.io/github/stars/noxaur/ds-mod?style=flat&logo=github)](https://github.com/noxaur/ds-mod/stargazers)
 
 Dragen is a mod for [DragSim](https://dragsim.co/) (Dragon Simulator) that aims to boost your enjoyment of DragSim without going too crazy on modifications. We strive to feel like a seamless addition to the game. Feature requests and contributions are handled as fast and respectfully as we can.
-
 <sub>Dragen is the Norwegian word for "the dragon".</sub>
 
 ## Installation guide
