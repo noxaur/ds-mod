@@ -8,7 +8,7 @@ Dragen is a mod for [DragSim](https://dragsim.co/) (Dragon Simulator) that aims 
 
 Requires Minecraft 26.2, [Fabric Loader](https://fabricmc.net/use/installer/) 0.20.1+, Java 25+, [Fabric API](https://modrinth.com/mod/fabric-api) and [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin).
 
-Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases). And add it to your mods using your favorite minecraft client.
+[**__Download__**](https://github.com/noxaur/ds-mod/releases) the mod and add it to your favorite minecraft client.
 
 ## Features
 
