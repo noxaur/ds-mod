@@ -4,8 +4,6 @@
 
 Dragen is a mod for [DragSim](https://dragsim.co/) (Dragon Simulator) that aims to boost your enjoyment of DragSim without going too crazy on modifications. We strive to feel like a seamless addition to the game. Feature requests and contributions are handled as fast and respectfully as we can.
 
-<sub>Dragen is the Norwegian word for "the dragon".</sub>
-
 ## Installation guide
 
 Requires Minecraft 26.2, [Fabric Loader](https://fabricmc.net/use/installer/) 0.20.1+, Java 25+, [Fabric API](https://modrinth.com/mod/fabric-api) and [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin).
