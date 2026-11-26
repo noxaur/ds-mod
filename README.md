@@ -15,7 +15,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 ## Features
 
 <details>
-<summary><h3>General</h3></summary>
+<summary>General</summary>
 
 - **DragSim Only** – Toggles dragen to only run while connected to dragsim.co.
 - **Ctrl Click** ( Mac only )– Makes Ctrl + left click a Ctrl click instead of a right click.
@@ -23,7 +23,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 
 </details>
 <details>
-<summary><h3>Camera & Visuals</h3></summary>
+<summary>Camera & Visuals</summary>
 
 - **Fullbright** – Never must you see the darkness, come fourth light.
 - **Hide Explosions** – Hide explosion particles.
@@ -35,7 +35,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 
 </details>
 <details>
-<summary><h3>HUD</h3></summary>
+<summary>HUD</summary>
 
 - **Ability Cooldowns** – Shows every item ability's cooldown.
 - **Equipment Display** – Shows your armor and pet on the HUD.
@@ -45,7 +45,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 
 </details>
 <details>
-<summary><h3>Chat & Commands</h3></summary>
+<summary>Chat & Commands</summary>
 
 - **Command Binds** – Sends a command with a key or key combo.
 - **Profile Viewer** – Type `/pv <name>` to see a player's profile.
@@ -56,7 +56,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 
 </details>
 <details>
-<summary><h3>Inventory & Menus</h3></summary>
+<summary>Inventory & Menus</summary>
 
 - **Item Rarity** – Colors each slot by its item's rarity.
 - **Slot Lock** – Locks slots and items so a misclick can't move or drop them.
@@ -76,7 +76,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 
 </details>
 <details>
-<summary><h3>The End</h3></summary>
+<summary>The End</summary>
 
 - **Zealot Tracker** – Tracks your Summoning Eyes and zealot kills.
 - **Dragon Timer** – Shows the egg countdown and the eyes placed.
@@ -88,7 +88,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 
 </details>
 <details>
-<summary><h3>Combat</h3></summary>
+<summary>Combat</summary>
 
 - **Damage Numbers** – Shortens damage numbers to 74.5M, or hides them.
 - **Boss Beacon** – Shows a beam over the bosses you pick.
@@ -96,7 +96,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 
 </details>
 <details>
-<summary><h3>Slayers & Loot</h3></summary>
+<summary>Slayers & Loot</summary>
 
 - **Slayer Tracker** – Tracks your slayer XP and average kill time.
 - **Slayer Boss Alert** – Alerts you when your slayer boss spawns.
@@ -104,7 +104,7 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 
 </details>
 <details>
-<summary><h3>Contribute</h3></summary>
+<summary>Contribute</summary>
 
 - **Report Game Data** – Sends new game data to the developers, with names removed. Off by default.
 
