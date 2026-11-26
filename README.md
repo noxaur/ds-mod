@@ -22,7 +22,6 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **Auto Clicker** – Left and or right clicks 9.9 cps.
 
 </details>
-
 <details>
 <summary><h3>Camera & Visuals</h3></summary>
 
@@ -35,7 +34,6 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **Etherwarp Outline** – Outlines the block your Etherwarp will land on.
 
 </details>
-
 <details>
 <summary><h3>HUD</h3></summary>
 
@@ -46,7 +44,6 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **Hide In F3** – Hides the HUD while F3 is open.
 
 </details>
-
 <details>
 <summary><h3>Chat & Commands</h3></summary>
 
@@ -58,7 +55,6 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **Hide Cooldown Messages** – Hides the "ability is on cooldown" messages.
 
 </details>
-
 <details>
 <summary><h3>Inventory & Menus</h3></summary>
 
@@ -79,7 +75,6 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **Keep Cursor** – Keeps the cursor in place when one menu opens another.
 
 </details>
-
 <details>
 <summary><h3>The End</h3></summary>
 
@@ -92,7 +87,6 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **Eye Guard** – Stops a double click from taking back your Summoning Eye.
 
 </details>
-
 <details>
 <summary><h3>Combat</h3></summary>
 
@@ -101,7 +95,6 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **Boss Tracer** – Draws a line to the bosses you pick.
 
 </details>
-
 <details>
 <summary><h3>Slayers & Loot</h3></summary>
 
@@ -110,7 +103,6 @@ Download the mod jar from [Releases](https://github.com/noxaur/ds-mod/releases).
 - **Rare Drop Alert** – Alerts you when you get a rare drop.
 
 </details>
-
 <details>
 <summary><h3>Contribute</h3></summary>
 
