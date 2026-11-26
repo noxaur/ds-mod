@@ -3,6 +3,7 @@
 [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/YUZCYAnr7F) [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/noxaur) [![GitHub stars](https://img.shields.io/github/stars/noxaur/ds-mod?style=flat&logo=github)](https://github.com/noxaur/ds-mod/stargazers)
 
 Dragen is a mod for [DragSim](https://dragsim.co/) (Dragon Simulator) that aims to boost your enjoyment of DragSim without going too crazy on modifications. We strive to feel like a seamless addition to the game. Feature requests and contributions are handled as fast and respectfully as we can.
+
 <sub>Dragen is the Norwegian word for "the dragon".</sub>
 
 ## Installation guide
