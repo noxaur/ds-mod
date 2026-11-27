@@ -48,6 +48,17 @@ repositories {
     }
 }
 
+// @keep Minecraft has no Linux arm64 natives, so there Loom takes every org.lwjgl module from Maven Central, which lacks Mojang's own builds such as lwjgl-freetype 3.4.1-mojang-2.15.0.3. Their upstream version has the arm64 natives.
+val lwjglFromCentral = System.getProperty("os.name") == "Linux" && System.getProperty("os.arch") == "aarch64"
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        val version = requested.version
+        if (lwjglFromCentral && requested.group == "org.lwjgl" && version != null && "-mojang" in version) {
+            useVersion(version.substringBefore("-mojang"))
+        }
+    }
+}
+
 val devMods = configurations.create("devMods") { isTransitive = false }
 
 val debug = sourceSets.create("debug") {
