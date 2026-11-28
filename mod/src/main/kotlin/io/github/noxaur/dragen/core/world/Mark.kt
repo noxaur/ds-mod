@@ -31,6 +31,10 @@ enum class WaypointLook(private val label: String, val box: BoxStyle?, val beam:
 
 const val FILL_ALPHA = 70
 
+data class Cuboid(val min: Point, val max: Point, override val role: Role = Role.VALUE) : Mark
+
+data class Segment(val from: Point, val to: Point, override val role: Role = Role.VALUE) : Mark
+
 data class EntityBeam(val entity: Int, val label: String, override val role: Role = Role.VALUE) : Mark
 
 data class Tracer(val entity: Int, override val role: Role = Role.VALUE) : Mark

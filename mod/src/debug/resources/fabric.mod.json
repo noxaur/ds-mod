@@ -12,6 +12,12 @@
         "adapter": "kotlin",
         "value": "io.github.noxaur.dragen.debug.DragenDebug"
       }
+    ],
+    "dragen:dev": [
+      {
+        "adapter": "kotlin",
+        "value": "io.github.noxaur.dragen.debug.dragon.DevOverlays"
+      }
     ]
   },
   "mixins": [

@@ -14,6 +14,7 @@ enum class Store(val key: String) {
     END("end"),
     SLAYER("slayer"),
     CONTRIBUTE("contribute"),
+    DEV("dev"),
     ;
 
     val className = key.replaceFirstChar(Char::uppercase)

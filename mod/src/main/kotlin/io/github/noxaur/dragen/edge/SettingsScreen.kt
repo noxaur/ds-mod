@@ -1,5 +1,6 @@
 package io.github.noxaur.dragen.edge
 
+import io.github.noxaur.dragen.core.config.DevTools
 import io.github.noxaur.dragen.core.config.DragenConfig
 import io.github.noxaur.dragen.core.config.Favorites
 import io.github.noxaur.dragen.core.config.FavoritesView
@@ -62,6 +63,7 @@ class SettingsScreen(
     private val tabs: SettingsTabs = session(config),
     private var reveal: String? = null,
     private var query: String? = null,
+    dev: List<DevTools> = emptyList(),
 ) : Screen(text { body("Dragen") }.toComponent()) {
     private sealed class Item(val y: Int, val height: Int)
     private class Heading(
@@ -70,7 +72,7 @@ class SettingsScreen(
     private class Group(y: Int, height: Int) : Item(y, height)
     private class Empty(y: Int, val line: String, val x: Int, val ink: Kit.Ink) : Item(y, 8)
 
-    internal val sections = sections(config)
+    internal val sections = sections(config, dev)
     private val every = sections.flatMap { it.walk() }
     private val icons = List(sections.size) { if (it == FAVORITES) Icon.STAR else null }
     private val tree = NavTree(sections.map { it.named.size })
@@ -576,7 +578,7 @@ class SettingsScreen(
 
         const val FAVORITES = 0
 
-        fun sections(config: DragenConfig) = listOf(SettingSection("Favorites", Role.ACTION, emptyList())) + SettingsTree(config).sections
+        fun sections(config: DragenConfig, dev: List<DevTools> = emptyList()) = listOf(SettingSection("Favorites", Role.ACTION, emptyList())) + SettingsTree(config, dev = dev).sections
 
         private var tabs: SettingsTabs? = null
 

@@ -19,7 +19,6 @@ class SidebarPoller(private val game: Game) {
     }
 
     fun poll(client: Minecraft) {
-        if (!game.wants(Sidebar::class.java)) return
         val scoreboard = client.level?.scoreboard
         val objective = scoreboard?.getDisplayObjective(DisplaySlot.SIDEBAR)
         val shown = if (scoreboard == null || objective == null) {
@@ -28,7 +27,8 @@ class SidebarPoller(private val game: Game) {
             listOf(objective.displayName) + scoreboard.listPlayerScores(objective).filter { !it.isHidden }.sortedWith(GameHud.SCORE_DISPLAY_ORDER).take(MAX_LINES)
                 .map { PlayerTeam.formatNameForTeam(scoreboard.getPlayersTeam(it.owner), it.ownerName()) }
         }
-        if (!gate.passes(shown, game.tap)) return
+        DragonFeeds.sidebar(shown)
+        if (!game.wants(Sidebar::class.java) || !gate.passes(shown, game.tap)) return
         val event = if (shown.isEmpty()) Sidebar() else Sidebar(shown.first().toText(), shown.drop(1).map { it.toText() })
         game.post(System.currentTimeMillis(), event)
     }

@@ -61,19 +61,31 @@ configurations.configureEach {
 
 val devMods = configurations.create("devMods") { isTransitive = false }
 
+val api = sourceSets.create("api")
+sourceSets.main {
+    compileClasspath += api.output
+    runtimeClasspath += api.output
+}
+kotlin.target.compilations.named("api") {
+    compileTaskProvider.configure { compilerOptions.freeCompilerArgs.add("-Xexplicit-api=strict") }
+}
+
 val debug = sourceSets.create("debug") {
     compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
     runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
 }
 sourceSets.test {
-    compileClasspath += debug.output
-    runtimeClasspath += debug.output
+    compileClasspath += api.output + debug.output
+    runtimeClasspath += api.output + debug.output
 }
 
 loom {
     accessWidenerPath = file("src/main/resources/dragen.accesswidener")
     mods {
-        register("dragen") { sourceSet(sourceSets.main.get()) }
+        register("dragen") {
+            sourceSet(sourceSets.main.get())
+            sourceSet(api)
+        }
         register("dragen_debug") { sourceSet(debug) }
     }
     runs.named("client") { setSource(debug) }
@@ -89,8 +101,8 @@ fabricApi {
     }
 }
 sourceSets.named("gametest") {
-    compileClasspath += debug.output
-    runtimeClasspath += debug.output
+    compileClasspath += api.output + debug.output
+    runtimeClasspath += api.output + debug.output
 }
 kotlin.target.compilations.named("gametest") { associateWith(kotlin.target.compilations.getByName("main")) }
 tasks.named<ProcessResources>("processGametestResources") {
@@ -189,6 +201,7 @@ tasks.withType<ProcessResources>().configureEach {
 }
 
 tasks.jar {
+    from(api.output)
     from("../LICENSE", "NOTICE")
 }
 

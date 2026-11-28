@@ -1,6 +1,7 @@
 package io.github.noxaur.dragen.core.config
 
 import io.github.noxaur.dragen.core.feature.Feature
+import io.github.noxaur.dragen.core.feature.Game
 import io.github.noxaur.dragen.core.feature.HasFeature
 import io.github.noxaur.dragen.core.feature.camel
 import io.github.noxaur.dragen.core.feature.combat.combat
@@ -45,8 +46,14 @@ class Groups(val c: DragenConfig, val mac: Boolean) {
     }
 }
 
-class SettingsTree(val config: DragenConfig = DragenConfig(), mac: Boolean = MAC) {
-    val sections: List<SettingSection> = declare(config, mac)
+interface DevTools {
+    fun declare(sections: Sections)
+
+    fun started(tree: SettingsTree, game: Game)
+}
+
+class SettingsTree(val config: DragenConfig = DragenConfig(), mac: Boolean = MAC, dev: List<DevTools> = emptyList()) {
+    val sections: List<SettingSection> = declare(config, mac, dev)
 
     val owners: List<HasFeature> = sections.asSequence().flatMap { it.walk() }.filterIsInstance<Switch>().mapNotNull { it.feature }
         .sortedBy { it.feature.area == Area.ANYWHERE }.toList()
@@ -54,7 +61,7 @@ class SettingsTree(val config: DragenConfig = DragenConfig(), mac: Boolean = MAC
     val features: List<Feature> = owners.map { it.feature }
 
     init {
-        val defaults = fresh.asSequence().flatMap { it.walk() }.associateBy { it.id }
+        val defaults = fresh(dev).asSequence().flatMap { it.walk() }.associateBy { it.id }
         for (setting in sections.asSequence().flatMap { it.walk() }) if (setting is Valued<*>) setting.adopt(defaults.getValue(setting.id))
         val repeated = features.groupBy { it.id }.filterValues { it.size > 1 }.keys
         check(repeated.isEmpty()) { "A feature is placed twice in SettingsTree, or two features share an id: $repeated" }
@@ -67,13 +74,15 @@ class SettingsTree(val config: DragenConfig = DragenConfig(), mac: Boolean = MAC
     companion object {
         val MAC = "mac" in System.getProperty("os.name").lowercase()
 
-        private val fresh by lazy { declare(DragenConfig(), mac = true) }
+        private val released by lazy { declare(DragenConfig(), mac = true, dev = emptyList()) }
 
-        fun home(switch: Switch): SettingSection? = fresh.firstOrNull { section -> section.walk().any { it is Switch && it.field == switch.field } }
+        private fun fresh(dev: List<DevTools>) = if (dev.isEmpty()) released else declare(DragenConfig(), mac = true, dev)
+
+        fun home(switch: Switch): SettingSection? = released.firstOrNull { section -> section.walk().any { it is Switch && it.field == switch.field } }
 
         /** @keep Versions up to 0.1.0 starred MoulConfig's options by path, as general.fullbright, and a feature's switch by its field's name. */
-        fun favorites(saved: List<String>): List<String> {
-            val rows = fresh.flatMap { it.walk() }
+        fun favorites(saved: List<String>, dev: List<DevTools> = emptyList()): List<String> {
+            val rows = fresh(dev).flatMap { it.walk() }
             val ids = rows.mapTo(HashSet()) { it.id }
             val byField = HashMap<String, String>()
             for (row in rows.filterIsInstance<Valued<*>>()) {
@@ -103,7 +112,7 @@ class SettingsTree(val config: DragenConfig = DragenConfig(), mac: Boolean = MAC
             }
         }
 
-        private fun declare(c: DragenConfig, mac: Boolean): List<SettingSection> {
+        private fun declare(c: DragenConfig, mac: Boolean, dev: List<DevTools>): List<SettingSection> {
             val sections = Sections(c, mac).apply {
                 general()
                 hud()
@@ -115,6 +124,7 @@ class SettingsTree(val config: DragenConfig = DragenConfig(), mac: Boolean = MAC
                 visuals()
                 utilities()
                 contribute()
+                for (tools in dev) tools.declare(this)
             }.sections
             for (section in sections) for (group in section.groups) link(group.rows, group.switch)
             val plain = sections.flatMap { it.groups }.filter { it.switch == null }.flatMap { loose(it.rows) }.filterIsInstance<Switch>()

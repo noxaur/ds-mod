@@ -14,9 +14,10 @@ class TabListPoller(private val game: Game) {
     }
 
     fun poll(client: Minecraft) {
-        if (!game.wants(TabList::class.java)) return
         val overlay = client.gui.hud.tabList
         val rows = if (client.player == null) emptyList() else overlay.getPlayerInfos().map(overlay::getNameForDisplay)
+        DragonFeeds.tabList(rows)
+        if (!game.wants(TabList::class.java)) return
         if (!gate.passes(rows, game.tap)) return
         game.post(System.currentTimeMillis(), TabList(rows.map { it.toText() }))
     }

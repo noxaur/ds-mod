@@ -18,6 +18,10 @@ A feature's switch, its settings and their defaults are declared in its own clas
 
 A feature's folder sits in its group's, and its group's in its section's, and each parent lists its children in the order the screen shows them. One list of every feature was rejected, because each pull request that added a feature edited it beside the last and they conflicted. Sorting by name was rejected because the order is a choice about the screen, and a number on each feature because no one place shows the order.
 
+## The Dev section belongs to the debug build
+
+A developer tool needs a switch, but the settings are declared in core. So the tree takes tools from the debug build, which add a Dev section after the last one, as SkyHanni puts Dev last, and the release code names none of them. The tools are not in the tree the player docs, the README and the tests walk, so a debug switch needs none of the three, and no check was weakened. A section file in core was rejected, because the release jar would carry it.
+
 ## The sections follow SkyHanni's order
 
 The sections run from what Dragen as a whole does, to places and activities, to what works everywhere, with Contribute last, as SkyHanni puts About and GUI first and Dev last. Players come from SkyHanni and SkyOcean, so they look for a setting where those mods keep it. A section for one kind of control, such as Binds or Camera, was rejected because a player looks for what a setting does, not how it is set. A feature that works in every activity, such as Rare Drop Alert, sits in Inventory rather than under the activity it was first built for.

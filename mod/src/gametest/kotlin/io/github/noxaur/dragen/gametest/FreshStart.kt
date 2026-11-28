@@ -15,7 +15,7 @@ object FreshStart {
     fun before(context: ClientGameTestContext) = context.runOnClient<Nothing> {
         DragenClient.settings.favorites = emptyList()
         for (store in Store.entries) DragenClient.settings.stored(store).reset()
-        check(ConfigFile.encode(DragenClient.settings) == ConfigFile.encode(DragenConfig().also { SettingsTree(it) })) {
+        check(ConfigFile.encode(DragenClient.settings) == ConfigFile.encode(DragenConfig().also { SettingsTree(it, dev = DragenClient.dev) })) {
             "A setting kept its value from the last test. Save it in a slot of a store, so FreshStart resets it."
         }
         DragenClient.restart { FabricLoader.getInstance().configDir.resolve("dragen/data").deleteRecursively() }

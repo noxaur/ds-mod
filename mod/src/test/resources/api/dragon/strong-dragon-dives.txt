@@ -1,0 +1,40 @@
+     0 Summoning, 0/8 eyes
+ 24883   An eye was placed, 2/8
+ 24885   An eye was placed, 3/8
+ 24893   An eye was placed, 4/8
+ 24898   An eye was placed, 5/8
+ 24913 Summoning, 5/8 eyes
+ 24915   An eye was placed, 6/8
+ 24921   An eye was placed, 7/8
+ 24946   An eye was placed, 8/8
+ 24947   The eyes summoned a dragon, due at 25116
+ 24947 Arriving at 25116
+ 25117   A Strong Dragon spawned
+ 25117 Fighting Strong, flying
+ 25317   It began Circling, ending at unknown
+ 25317 Fighting Strong, flying, casting Circling
+ 25520   It dove from (-656, 31, -261)
+ 25520   Circling ended
+ 25520 Fighting Strong, diving
+ 25544   Its dive bottomed at (-628, 10, -261), the gate purge
+ 25544 Fighting Strong, flying
+ 25818   It began Circling, ending at unknown
+ 25818 Fighting Strong, flying, casting Circling
+ 25964   It dove from (-682, 44, -294)
+ 25964   Circling ended
+ 25964 Fighting Strong, diving
+ 25979   Its dive bottomed at (-677, 11, -276), the altar purge
+ 25979 Fighting Strong, flying
+ 26037   The Strong Dragon died at (-650, 48, -261)
+ 26037   The egg is rebuilding, due at 26236
+ 26037 Respawning, egg at 26236
+ 26236   The egg is whole
+ 26236 Summoning, 0/8 eyes
+ 26238   An eye was placed, 1/8
+ 26238 Summoning, 1/8 eyes
+ 26244   An eye was placed, 2/8
+ 26244 Summoning, 2/8 eyes
+ 26248   An eye was placed, 2/8
+ 26248   An eye was taken back, 2/8
+ 26256   An eye was placed, 3/8
+ 26256 Summoning, 3/8 eyes

@@ -1,25 +1,17 @@
-package io.github.noxaur.dragen.core.feature
+package io.github.noxaur.dragen.api
 
-import io.github.noxaur.dragen.core.game.LeftServer
-import io.github.noxaur.dragen.core.game.ServerTime
-import io.github.noxaur.dragen.core.game.WorldChanged
-
-class ServerClock(feature: Feature) {
+public class ServerClock {
     private val arrived = ArrayDeque<Long>()
     private val ticks = ArrayDeque<Long>()
     private var offset = 0L
     private var shift = 0L
 
-    var updates = 0
+    public var updates: Int = 0
         private set
 
-    init {
-        feature.on<ServerTime> { time, now -> record(now, time.gameTime) }
-        feature.on<WorldChanged> { _, now -> clear(now) }
-        feature.on<LeftServer> { _, now -> clear(now) }
-    }
+    public val rate: TickRate get() = TickRate(measured().coerceAtLeast(MIN_RATE))
 
-    private fun record(now: Long, gameTime: Long) {
+    public fun time(gameTime: Long, now: Long) {
         if (ticks.isNotEmpty() && gameTime < ticks.last()) clear(now)
         if (ticks.isEmpty()) offset = now + shift - gameTime * TICK_MILLIS
         arrived.addLast(now)
@@ -31,22 +23,24 @@ class ServerClock(feature: Feature) {
         updates++
     }
 
-    private fun clear(now: Long) {
+    public fun clear(now: Long) {
         shift = millis(now) - now
         arrived.clear()
         ticks.clear()
         updates++
     }
 
-    fun millis(now: Long): Long {
+    public fun millis(now: Long): Long {
         if (ticks.isEmpty()) return now + shift
         val since = (now - arrived.last()).coerceIn(0, STALL_MILLIS)
-        return offset + ticks.last() * TICK_MILLIS + (since * rate() / TICKS_PER_SECOND).toLong()
+        return offset + ticks.last() * TICK_MILLIS + (since * measured() / TICKS_PER_SECOND).toLong()
     }
 
-    fun wall(span: Long): Long = (span * TICKS_PER_SECOND / rate().coerceAtLeast(MIN_RATE)).toLong()
+    public fun wall(span: Long): Long = (span * TICKS_PER_SECOND / rate.perSecond).toLong()
 
-    private fun rate(): Double {
+    /** @keep A rate read from one pair of time packets jitters with the network, so one at or above HEALTHY_RATE is the
+     * server's full rate. */
+    private fun measured(): Double {
         val last = ticks.size - 1
         if (last < 1) return TICKS_PER_SECOND
         val span = arrived[last] - arrived[last - 1]
@@ -55,7 +49,7 @@ class ServerClock(feature: Feature) {
         return if (rate >= HEALTHY_RATE) TICKS_PER_SECOND else rate.coerceAtLeast(0.0)
     }
 
-    fun tps(now: Long): Double? {
+    public fun tps(now: Long): Double? {
         if (arrived.isEmpty()) return null
         val newest = arrived.last()
         val end = if (now - newest > STALL_MILLIS) now else newest
@@ -71,6 +65,8 @@ class ServerClock(feature: Feature) {
         const val MIN_SPAN_MILLIS = 1_500L
         const val STALL_MILLIS = 3_000L
         const val HEALTHY_RATE = 19.5
+
+        /** @keep A frozen server measures 0, which would stall every conversion to real time. */
         const val MIN_RATE = 1.0
     }
 }

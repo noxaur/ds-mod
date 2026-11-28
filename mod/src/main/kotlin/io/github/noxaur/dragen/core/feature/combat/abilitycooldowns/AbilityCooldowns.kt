@@ -22,7 +22,6 @@ import java.util.IdentityHashMap
 import kotlin.math.abs
 import kotlin.math.ceil
 import io.github.noxaur.dragen.core.feature.ContainerReader
-import io.github.noxaur.dragen.core.feature.ServerClock
 
 /** @keep A use is the action bar's mana part appearing, `-100 Mana (Giant's Slam)`, which stays up for a few of the server's half-second updates, so only its arrival counts. Some abilities say so in chat instead: `HOWL!` for the Tuba, `Soulcry! +` for a katana, `You used Void Infusion!` for the drill. A charging set bonus, `(4) Every 8s your next hit blinks you`, starts on the player's own hit and a hit while it charges does not restart it, so the server sends nothing for it. */
 class AbilityCooldowns(config: DragenConfig) : HasFeature {
@@ -44,7 +43,7 @@ class AbilityCooldowns(config: DragenConfig) : HasFeature {
 
     private class Read(val keys: List<String>, val abilities: List<Known>, val charge: SetCharge?, val anySet: Boolean)
 
-    private val clock = ServerClock(feature)
+    private val clock get() = feature.clock
     private val reads = IdentityHashMap<Item, Read>()
     private val known = HashMap<String, Known>()
     private val timers = HashMap<String, Timer>()

@@ -12,7 +12,6 @@ import io.github.noxaur.dragen.core.hud.HudLook
 import io.github.noxaur.dragen.core.text.TextBuilder
 import io.github.noxaur.dragen.core.text.fixed
 import io.github.noxaur.dragen.core.text.grouped
-import io.github.noxaur.dragen.core.feature.ServerClock
 
 enum class Stat(private val label: String) {
     FPS("FPS"),
@@ -47,7 +46,7 @@ class PerformanceStats(config: DragenConfig) : HasFeature {
     val layout = feature.choice("performanceLayout", "Layout", "Line the values up in a row or a column.", StatsLayout.ROW)
     val look = feature.choice("performanceLook", "Look", "Show the values on a plate, or on nothing.", StatsLook.PLATE)
 
-    private val clock = ServerClock(feature)
+    private val clock get() = feature.clock
     private var fps = -1
     private val pings = LongArray(PINGS)
     private var pingCount = 0

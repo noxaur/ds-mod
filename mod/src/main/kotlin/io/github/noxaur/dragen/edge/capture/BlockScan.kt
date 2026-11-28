@@ -2,6 +2,7 @@ package io.github.noxaur.dragen.edge.capture
 
 import io.github.noxaur.dragen.core.capture.ChangeLog
 import io.github.noxaur.dragen.core.capture.RawRecord
+import io.github.noxaur.dragen.edge.eachBlock
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -93,16 +94,8 @@ class BlockScan(private val changes: ChangeLog, private val nanoTime: () -> Long
                 skull.noteBlockSound?.let { put("noteBlockSound", it.toString()) }
             }
         }
-        chunk.sections.forEachIndexed { index, section ->
-            if (section.hasOnlyAir() || !section.maybeHas(::watched)) return@forEachIndexed
-            val minY = chunk.minY + index * 16
-            for (y in 0 until 16) for (z in 0 until 16) for (x in 0 until 16) {
-                val state = section.getBlockState(x, y, z)
-                if (watched(state)) {
-                    states["${pos.minBlockX + x},${minY + y},${pos.minBlockZ + z}"] =
-                        serialized.getOrPut(state) { JsonPrimitive(BlockStateParser.serialize(state)) }
-                }
-            }
+        chunk.eachBlock(::watched) { x, y, z, state ->
+            states["$x,$y,$z"] = serialized.getOrPut(state) { JsonPrimitive(BlockStateParser.serialize(state)) }
         }
     }
 }

@@ -18,6 +18,7 @@ Internal docs record the decisions, the constraints and the traps that the code 
 - [Contributions](internals/contributions.md): requests, uploads, item sightings, and the one switch for everything the mod reports.
 - [Backend and website](internals/backend.md): the Effect API inside Void, the one file that touches the database, and the website on Vercel.
 - [Sign-in](internals/sign-in.md): why a player is their Minecraft account, and how the mod and the website sign in.
+- [Game API](internals/api.md): why features read the game through one API, what it exposes, how it reads the world, and how a dragon is composed.
 - [Player data](internals/player-data.md): the one layer every feature reads the player's own data from, kept for each profile.
 - [Profiles](internals/profiles.md): how the backend looks players up and rebuilds item tooltips, and how the viewer draws them.
 - [UI](internals/ui.md): text roles, the layers, the kit and its themes, the HUD and world marks.

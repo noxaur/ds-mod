@@ -13,14 +13,14 @@ fun sourceSet(name: String) = describe<JavaClass>("in the $name source set") { t
 }
 
 val everyClass: JavaClasses by lazy {
-    val dirs = listOf("main", "debug", "gametest").flatMap { listOf("build/classes/kotlin/$it", "build/classes/java/$it") }
+    val dirs = listOf("api", "main", "debug", "gametest").flatMap { listOf("build/classes/kotlin/$it", "build/classes/java/$it") }
         .map(Path::of).filter { it.exists() }
-    ClassFileImporter().importPaths(dirs).also { check(it.size > 100) { "Found ${it.size} classes in main, debug and gametest. Build them first." } }
+    ClassFileImporter().importPaths(dirs).also { check(it.size > 100) { "Found ${it.size} classes in api, main, debug and gametest. Build them first." } }
 }
 
-val modClasses: JavaClasses by lazy { everyClass.that(sourceSet("main").or(sourceSet("debug"))) }
+val modClasses: JavaClasses by lazy { everyClass.that(sourceSet("api").or(sourceSet("main")).or(sourceSet("debug"))) }
 
-val releaseClasses: JavaClasses by lazy { everyClass.that(sourceSet("main")) }
+val releaseClasses: JavaClasses by lazy { everyClass.that(sourceSet("api").or(sourceSet("main"))) }
 
 fun fixture(type: Class<*>): JavaClasses = ClassFileImporter()
     .withImportOption { it.contains("/${type.simpleName}.class") || it.contains("/${type.simpleName}$") }
