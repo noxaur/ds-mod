@@ -1,11 +1,13 @@
 package io.github.noxaur.dragen.edge
 
+import io.github.noxaur.dragen.api.boss.dragon.DragonSystem
 import io.github.noxaur.dragen.core.feature.general.mouse.ctrlclick.CtrlClick
 import io.github.noxaur.dragen.core.ui.SettingsTabs
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.brigadier.arguments.StringArgumentType
 import io.github.noxaur.dragen.core.config.Canvas
 import io.github.noxaur.dragen.core.config.ConfigFile
+import io.github.noxaur.dragen.core.config.DevTools
 import io.github.noxaur.dragen.core.config.DragenConfig
 import io.github.noxaur.dragen.core.config.Opens
 import io.github.noxaur.dragen.core.config.Panel
@@ -56,6 +58,8 @@ object DragenClient : ClientModInitializer {
     lateinit var settings: DragenConfig
         private set
     internal lateinit var tree: SettingsTree
+
+    internal val dev: List<DevTools> by lazy { FabricLoader.getInstance().getEntrypoints("dragen:dev", DevTools::class.java) }
     lateinit var game: Game
         private set
     private lateinit var readouts: Readouts
@@ -89,7 +93,7 @@ object DragenClient : ClientModInitializer {
     var anyServer = FabricLoader.getInstance().isModLoaded("dragen_debug")
 
     fun settingsScreen(parent: Screen?, tabs: SettingsTabs = SettingsScreen.session(settings), reveal: String? = null, query: String? = null) =
-        SettingsScreen(parent, settings, ::saveSettings, tabs, reveal, query)
+        SettingsScreen(parent, settings, ::saveSettings, tabs, reveal, query, dev)
 
     fun openSettings(id: String? = null, search: String? = null) =
         Minecraft.getInstance().let { it.setScreenAndShow(settingsScreen(it.gui.screen(), reveal = id, query = search)) }
@@ -121,7 +125,7 @@ object DragenClient : ClientModInitializer {
 
     internal fun start() {
         SettingsScreen.forget()
-        tree = SettingsTree(settings)
+        tree = SettingsTree(settings, dev = dev)
         game = Game(tree.features, connected = { anyServer || onDragSim })
         saved = SavedFiles(FabricLoader.getInstance().configDir.resolve("dragen/data"), game, Minecraft.getInstance().user.profileId.toString()).also { it.load() }
         readouts = Readouts(game, settings.hud, tree.feature())
@@ -129,6 +133,7 @@ object DragenClient : ClientModInitializer {
         sidebars = SidebarPoller(game)
         containers = ContainerPoller(game)
         entities = EntityTracker(game)
+        DragonFeeds.bind(DragonSystem(game.clock))
         game.metrics.sinks += { snapshot ->
             snapshot.failures.forEach { (name, failure) -> log.error("{} failed {} times, first with {}", name, failure.count, failure.first) }
         }
@@ -168,11 +173,12 @@ object DragenClient : ClientModInitializer {
         WaypointChat.bind(game, tree.feature(), ::saveSettings) { openSettings(it) }
         StorageOverlays.bind(game, tree.feature())
         StoragePreviews.bind(tree.feature())
+        for (tools in dev) tools.started(tree, game)
     }
 
     override fun onInitializeClient() {
         file = ConfigFile(FabricLoader.getInstance().configDir.resolve("dragen/config.json"))
-        settings = file.load().apply { favorites = SettingsTree.favorites(favorites) }
+        settings = file.load().apply { favorites = SettingsTree.favorites(favorites, dev) }
         warnUnreadable()
         start()
         Hooks.register(settings.hud, ::pressed, { containers.changed(Minecraft.getInstance()) }) { parent -> settingsScreen(parent) }
@@ -232,13 +238,18 @@ object DragenClient : ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> left = true }
         ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { _, _ ->
             Packets.worldChanged()
+            DragonFeeds.worldChanged()
             readouts.worldChanged()
             game.post(System.currentTimeMillis(), WorldChanged)
             tabs.forget()
             entities.forget()
             sidebars.forget()
         }
-        ClientChunkEvents.CHUNK_LOAD.register { _, chunk -> Packets.chunk(chunk) }
+        ClientChunkEvents.CHUNK_LOAD.register { _, chunk ->
+            Packets.chunk(chunk)
+            DragonFeeds.chunk(chunk)
+        }
+        ClientChunkEvents.CHUNK_UNLOAD.register { _, chunk -> DragonFeeds.unloaded(chunk) }
         Ticks.start { leave() }
         Ticks.end {
             if (ticks % TAB_POLL_TICKS == 0) {
@@ -249,6 +260,7 @@ object DragenClient : ClientModInitializer {
             game.metrics.time("entities") { entities.track(it) }
             Frames.tick(it, game)
             Packets.tick(it)
+            game.metrics.time("dragon-feed") { DragonFeeds.tick(it) }
             game.tick(System.currentTimeMillis())
             readouts.push()
             Contribute.tick(System.currentTimeMillis())

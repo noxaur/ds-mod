@@ -5,6 +5,8 @@ import io.github.noxaur.dragen.core.game.Metrics
 import io.github.noxaur.dragen.core.text.Role
 import io.github.noxaur.dragen.core.ui.Colors
 import io.github.noxaur.dragen.core.world.BoxStyle
+import io.github.noxaur.dragen.core.world.Cuboid
+import io.github.noxaur.dragen.core.world.Segment
 import io.github.noxaur.dragen.core.world.EntityBeam
 import io.github.noxaur.dragen.core.world.FILL_ALPHA
 import io.github.noxaur.dragen.core.world.Mark
@@ -57,6 +59,7 @@ object World {
 
     internal sealed interface Shown
     internal class ShownBox(val box: AABB, val style: GizmoStyle) : Shown
+    internal class ShownLine(val from: Vec3, val to: Vec3, val color: Int) : Shown
     internal abstract class Follow(val entity: Int) {
         var found: Entity? = null
     }
@@ -116,6 +119,8 @@ object World {
         this.marks[id] = marks.mapNotNull { mark ->
             when (mark) {
                 is Waypoint -> waypoint(mark)
+                is Cuboid -> ShownBox(AABB(mark.min.vec(), mark.max.vec()), GizmoStyle.stroke(mark.role.argb(), LINE_WIDTH))
+                is Segment -> ShownLine(mark.from.vec(), mark.to.vec(), mark.role.argb())
                 is EntityBeam, is Tracer -> null
             }
         }
@@ -156,7 +161,8 @@ object World {
             find(level)
             for (i in shown.indices) {
                 when (val mark = shown[i]) {
-                    is ShownBox -> Gizmos.cuboid(mark.box, mark.style)
+                    is ShownBox -> Gizmos.cuboid(mark.box, mark.style).setAlwaysOnTop()
+                    is ShownLine -> Gizmos.line(mark.from, mark.to, mark.color, LINE_WIDTH).setAlwaysOnTop()
                     is ShownWaypoint -> {
                         mark.label.at(camera.distanceTo(mark.at).toInt())
                         mark.box?.let { box -> Gizmos.cuboid(box.box, box.style).onTop(mark.onTop) }

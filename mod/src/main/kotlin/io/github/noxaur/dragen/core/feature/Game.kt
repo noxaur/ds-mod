@@ -1,5 +1,6 @@
 package io.github.noxaur.dragen.core.feature
 
+import io.github.noxaur.dragen.api.ServerClock
 import io.github.noxaur.dragen.core.config.SettingsTree
 import io.github.noxaur.dragen.core.container.SlotMark
 import io.github.noxaur.dragen.core.contribute.Places
@@ -18,6 +19,7 @@ import io.github.noxaur.dragen.core.game.Metrics
 import io.github.noxaur.dragen.core.game.Sidebar
 import io.github.noxaur.dragen.core.game.SidebarState
 import io.github.noxaur.dragen.core.game.SlotChanged
+import io.github.noxaur.dragen.core.game.ServerTime
 import io.github.noxaur.dragen.core.game.TabList
 import io.github.noxaur.dragen.core.game.TabState
 import io.github.noxaur.dragen.core.game.LeftServer
@@ -69,6 +71,8 @@ class Game(
 
     val readouts = features.map(::Readout)
 
+    val clock = ServerClock()
+
     private val finished = ConcurrentLinkedQueue<() -> Unit>()
 
     var tap: ((time: Long, event: GameEvent) -> Unit)? = null
@@ -119,11 +123,12 @@ class Game(
             it.worlds = { worlds }
             it.worker = { work -> worker.execute(work) }
             it.handBack = { done -> finished.add(done) }
+            it.clock = clock
         }
     }
 
     fun wants(type: Class<out GameEvent>) =
-        tap != null || active && (player.wants(type) ||features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) })
+        tap != null || type == ServerTime::class.java || active && (player.wants(type) ||features.any { it.enabled && (type == TabList::class.java || type == Sidebar::class.java || type in it.handlers) })
 
     fun reaches(type: Class<out GameEvent>) = active && features.any { it.enabled && type in it.handlers && it.area.holds(tab, sidebar) }
 
@@ -174,7 +179,9 @@ class Game(
             }
             is ContainerOpened -> true.also { metrics.time("container") { container.opened(event) } }
             is SlotChanged -> true.also { metrics.time("container") { container.changed(event) } }
+            is ServerTime -> true.also { clock.time(event.gameTime, time) }
             WorldChanged, LeftServer -> true.also {
+                clock.clear(time)
                 worlds++
                 lastTab = null
                 lastSidebar = null

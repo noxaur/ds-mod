@@ -82,6 +82,7 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
     private val maps = MapRecorder(writer)
     private val items = ItemCache()
     private val entities = EntityRecorder()
+    private val motion = MotionRecorder()
     private var ticks = 0
     private var titleTime = 0
     private val stateNames = HashMap<BlockState, String>()
@@ -121,6 +122,10 @@ class CaptureSession(dir: Path, private val game: Game) : AutoCloseable {
 
         blockScan.tick(level, player)
         digging(client)
+        game.metrics.time("capture-motion") {
+            val moved = motion.pass(level, player)
+            if (moved.isNotEmpty()) writer.record(RawRecord.MOTION) { JsonObject(moved) }
+        }
 
         if (ticks++ % OFFER_PERIOD_TICKS != 0) return
 

@@ -1,5 +1,6 @@
 package io.github.noxaur.dragen.debug
 
+import io.github.noxaur.dragen.debug.dragon.DevOverlays
 import io.github.noxaur.dragen.edge.Hooks
 import io.github.noxaur.dragen.core.brief.Brief
 import io.github.noxaur.dragen.edge.capture.CaptureSession
@@ -39,9 +40,11 @@ object DragenDebug : ClientModInitializer {
 
     override fun onInitializeClient() {
         JoinDragSim.register()
+        DevOverlays.register()
         // @keep The window does not exist yet, and takes its title when it opens.
         System.getProperty("dragen.brief")?.let { Recording.startAtLaunch(Brief.read(Path.of(it))) }
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
+            DevOverlays.zones?.register(dispatcher)
             dispatcher.register(
                 ClientCommands.literal("dscapture")
                     .executes { context ->

@@ -1,0 +1,96 @@
+     0 Unknown
+     4 Summoning, 4/8 eyes
+    36   An eye was placed, 5/8
+    45   An eye was placed, 6/8
+    60   An eye was placed, 7/8
+    63   An eye was placed, 8/8
+    64   The eyes summoned a dragon, due at 233
+    64 Arriving at 233
+   233   A Protector Dragon spawned
+   233 Fighting Protector, flying
+   434   It began Lightning, ending at 494
+   434   Incoming: Lightning Wind-Up at 454
+   434   Incoming: Lightning Wind-Up at 474
+   434   Incoming: Lightning at 494
+   434 Fighting Protector, flying, casting Lightning
+   436 Fighting Protector, hovering, casting Lightning
+   454   Landed: Lightning Wind-Up at 454 (-683, 50, -266)
+   454   Lightning reached its Lightning Wind-Up beat
+   474   Landed: Lightning Wind-Up at 474 (-683, 50, -266)
+   474   Lightning reached its Lightning Wind-Up beat
+   494   Landed: Lightning at 494 (-669, 14, -274)
+   494   Landed: Lightning at 494 (-729, 5, -271)
+   494   Landed: Lightning at 494 (-672, -5, -298)
+   494   Landed: Lightning at 494 (-586, 5, -269)
+   494   Lightning reached its Lightning beat
+   494   Lightning ended
+   494 Fighting Protector, recovering
+   511 Fighting Protector, flying
+   794   It began Lightning, ending at 854
+   794   Incoming: Lightning Wind-Up at 814
+   794   Incoming: Lightning Wind-Up at 834
+   794   Incoming: Lightning at 854
+   794 Fighting Protector, flying, casting Lightning
+   796 Fighting Protector, hovering, casting Lightning
+   814   Landed: Lightning Wind-Up at 814 (-687, 35, -301)
+   814   Lightning reached its Lightning Wind-Up beat
+   834   Landed: Lightning Wind-Up at 834 (-687, 35, -301)
+   834   Lightning reached its Lightning Wind-Up beat
+   854   Landed: Lightning at 854 (-676, 11, -275)
+   854   Landed: Lightning at 854 (-739, 5, -271)
+   854   Landed: Lightning at 854 (-671, -5, -300)
+   854   Lightning reached its Lightning beat
+   854   Lightning ended
+   854 Fighting Protector, recovering
+   871 Fighting Protector, flying
+   923   It dove from (-663, 47, -282)
+   923 Fighting Protector, diving
+   943   Its dive bottomed at (-671, 13, -276), the altar purge
+   943 Fighting Protector, flying
+  1155   It began Fireball, ending at 1315
+  1155   Incoming: Fireball at 1235
+  1155   Incoming: Fireball at 1255
+  1155   Incoming: Fireball at 1275
+  1155   Incoming: Fireball at 1295
+  1155   Incoming: Fireball at 1315
+  1155 Fighting Protector, flying, casting Fireball
+  1157 Fighting Protector, hovering, casting Fireball
+  1235   Fireball reached its Fireball beat
+  1236   Incoming: Fireball thrown at 1.35 blocks a tick
+  1255   Fireball reached its Fireball beat
+  1256   Incoming: Fireball thrown at 1.35 blocks a tick
+  1275   Landed: Fireball thrown at 1.35 blocks a tick
+  1275   Fireball reached its Fireball beat
+  1276   Incoming: Fireball thrown at 1.34 blocks a tick
+  1295   Fireball reached its Fireball beat
+  1296   Incoming: Fireball thrown at 1.35 blocks a tick
+  1298   Landed: Fireball thrown at 1.35 blocks a tick
+  1315   Landed: Fireball thrown at 1.34 blocks a tick
+  1315   Fireball reached its Fireball beat
+  1315   Fireball ended
+  1315 Fighting Protector, recovering
+  1316   Incoming: Fireball thrown at 1.34 blocks a tick
+  1330   Landed: Fireball thrown at 1.35 blocks a tick
+  1333 Fighting Protector, flying
+  1356   Landed: Fireball thrown at 1.34 blocks a tick
+  1590   It dove from (-683, 44, -299)
+  1590 Fighting Protector, diving
+  1610   Its dive bottomed at (-670, 16, -278), the altar purge
+  1610 Fighting Protector, flying
+  1751   It began Fireball, ending at 1911
+  1751   Incoming: Fireball at 1831
+  1751   Incoming: Fireball at 1851
+  1751   Incoming: Fireball at 1871
+  1751   Incoming: Fireball at 1891
+  1751   Incoming: Fireball at 1911
+  1751 Fighting Protector, flying, casting Fireball
+  1754 Fighting Protector, hovering, casting Fireball
+  1831   Fireball reached its Fireball beat
+  1832   Incoming: Fireball thrown at 1.35 blocks a tick
+  1851   Fireball reached its Fireball beat
+  1852   Incoming: Fireball thrown at 1.35 blocks a tick
+  1852   The Protector Dragon died at (-646, 35, -267)
+  1852   The egg is rebuilding, due at 2051
+  1852 Respawning, egg at 2051
+  2051   The egg is whole
+  2051 Summoning, 0/8 eyes

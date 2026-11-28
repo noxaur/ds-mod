@@ -2,7 +2,6 @@ package io.github.noxaur.dragen.edge.capture
 
 import io.github.noxaur.dragen.edge.typeId
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -87,8 +86,7 @@ class EntityRecorder {
         }
     }
 
-    private var last = LinkedHashMap<Int, Entry>()
-    private var seen = LinkedHashMap<Int, Entry>()
+    private val passes = Passes<Entry>()
 
     fun pass(level: ClientLevel, player: Player, mapIds: MutableSet<MapId>): Map<String, JsonElement> {
         val changed = LinkedHashMap<String, JsonElement>()
@@ -96,10 +94,7 @@ class EntityRecorder {
             if (entity === player) continue
             entry(entity, mapIds)?.let { changed[entity.id.toString()] = it }
         }
-        for (id in last.keys) if (id !in seen) changed[id.toString()] = JsonNull
-        last = seen.also { seen = last }
-        seen.clear()
-        return changed
+        return passes.end(changed)
     }
 
     /** @keep One call per entity rather than a loop body so that the JIT compiles it within a few passes: [pass] runs only four times a second, which leaves a loop inside it interpreted for the first minute of a recording. */
@@ -117,8 +112,8 @@ class EntityRecorder {
         val named = entity.hasCustomName() || entity is Player || equipped
         if (!named && !entity.isCurrentlyGlowing && item == null && entity !is Display && !watched(entity)) return null
 
-        val entry = last[entity.id] ?: Entry()
-        seen[entity.id] = entry
+        val entry = passes.previous(entity.id) ?: Entry()
+        passes.keep(entity.id, entry)
         var changed = false
         if (living != null) slots.forEachIndexed { index, slot -> if (entry.stack(index, living.getItemBySlot(slot).takeUnless { it.isEmpty })) changed = true }
         if (entry.stack(shown, item)) changed = true

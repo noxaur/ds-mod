@@ -34,6 +34,7 @@ object Packets {
 
     fun systemChat(text: Component, overlay: Boolean) {
         if (overlay) return actionBar(text)
+        DragonFeeds.chat(text)
         shown = !game.wants(SystemMessage::class.java) || game.post(System.currentTimeMillis(), SystemMessage(text.toText()))
     }
 
@@ -65,6 +66,7 @@ object Packets {
     fun worldChanged() = waiting.clear()
 
     fun block(pos: BlockPos, state: BlockState) {
+        DragonFeeds.block(pos, state)
         if (state.block === Blocks.PLAYER_HEAD) hold(pos.immutable())
     }
 

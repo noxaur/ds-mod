@@ -13,6 +13,9 @@ enum class RawRecord {
 
     ENTITIES,
 
+    // @keep Exact position, velocity and rotation by entity id, every tick, for the dragon with its `parts`, projectiles with their `owner`, falling blocks, lightning and the player as `self`. A null entry is an entity gone.
+    MOTION,
+
     STATUS,
 
     SOUND,

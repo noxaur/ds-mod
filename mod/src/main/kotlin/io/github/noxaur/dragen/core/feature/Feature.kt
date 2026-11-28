@@ -1,5 +1,6 @@
 package io.github.noxaur.dragen.core.feature
 
+import io.github.noxaur.dragen.api.ServerClock
 import io.github.noxaur.dragen.core.config.Bind
 import io.github.noxaur.dragen.core.config.Canvas
 import io.github.noxaur.dragen.core.config.Choice
@@ -132,6 +133,9 @@ class Feature(
         check(state == null) { "$id already saves state" }
         return Saved(serializer, default, profiled).also { state = it }
     }
+
+    var clock: ServerClock = ServerClock()
+        internal set
 
     internal var worker: (work: () -> Unit) -> Unit = { it() }
     internal var handBack: (done: () -> Unit) -> Unit = { it() }

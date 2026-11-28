@@ -4,6 +4,7 @@ import io.github.noxaur.dragen.core.capture.Captured
 import io.github.noxaur.dragen.core.capture.PlayerNames
 import io.github.noxaur.dragen.core.capture.Redactor
 import io.github.noxaur.dragen.core.capture.captureLine
+import io.github.noxaur.dragen.core.capture.rawCaptureLine
 import io.github.noxaur.dragen.core.capture.readCaptureLine
 import io.github.noxaur.dragen.core.config.SettingsTree
 import io.github.noxaur.dragen.core.game.Area
@@ -26,6 +27,7 @@ import io.github.noxaur.dragen.core.game.WorldChanged
 import io.github.noxaur.dragen.core.game.view
 import io.github.noxaur.dragen.edge.toText
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
@@ -46,6 +48,7 @@ fun cutFixture(
     info: List<String> = emptyList(),
     system: Regex? = null,
     entities: List<EntityFilter> = emptyList(),
+    raw: (type: String, data: JsonObject) -> JsonObject? = { _, _ -> null },
 ): Pair<Int, Int> {
     val kept = types + buildSet {
         if ("container" in types) add("slot")
@@ -75,19 +78,27 @@ fun cutFixture(
         heldAtStart = held.values.filter { seen -> entities.any { it.matches(seen) } }
     }
     val events = ArrayList<Captured>()
+    val rawLines = ArrayList<Pair<Int, String>>()
     val legacy = if ("floating" in types && capture.useLines { lines -> lines.none { "\"type\":\"floating\"" in it } }) HashMap<String, String>() else null
     capture.useLines { lines ->
         for (line in lines.filter(String::isNotBlank)) {
             val time = line.substringAfter("\"t\":").takeWhile(Char::isDigit).toLong()
             if (origin < 0) origin = time
             val type = line.substringAfter("\"type\":\"").substringBefore('"')
+            val second = (time - origin) / 1000.0
+            if (second > seconds.endInclusive) break
             val read = when {
                 type == "entities" && legacy != null -> floating(line, legacy)
                 type in kept -> listOf(checkNotNull(readCaptureLine(line)) { "A line of a kept type did not read: $line" })
-                else -> continue
+                else -> {
+                    if (second < seconds.start) continue
+                    val json = Json.parseToJsonElement(line).jsonObject
+                    val data = raw(type, json.getValue("data").jsonObject) ?: continue
+                    if (start == null) begin()
+                    rawLines += events.size to rawCaptureLine(time, type, data, json["tick"]?.jsonPrimitive?.int)
+                    continue
+                }
             }
-            val second = (time - origin) / 1000.0
-            if (second > seconds.endInclusive) break
             for (captured in read) {
                 val event = captured.event
                 val tick = captured.tick
@@ -137,8 +148,9 @@ fun cutFixture(
     }
     if (start == null) begin()
     val state = listOfNotNull(tab, sidebar, container) + checkNotNull(start) { "begin sets the slots the window starts with" }.map { (slot, item) -> SlotChanged(slot, item) } + heldAtStart
-    val lines = (state.map { Captured(origin + (seconds.start * 1000).toLong(), it) } + events)
-        .map { captureLine(it.time, redactor.redact(it.event), it.tick) }
+    val opening = state.map { captureLine(origin + (seconds.start * 1000).toLong(), redactor.redact(it)) }
+    val raws = rawLines.groupBy({ it.first }, { it.second })
+    val lines = opening + events.flatMapIndexed { index, it -> raws[index].orEmpty() + captureLine(it.time, redactor.redact(it.event), it.tick) } + raws[events.size].orEmpty()
     val others = capture.toAbsolutePath().parent.listDirectoryEntries("*.jsonl")
     val leaked = PlayerNames.leaked(PlayerNames.of(capture, *others.toTypedArray()), lines.joinToString("\n"))
     check(leaked.isEmpty()) {
@@ -154,18 +166,51 @@ fun main(args: Array<String>) {
     val (capture, feature, name, window) = args
     val options = args.drop(4).chunked(2).associate { (flag, value) -> flag to value }
     val (from, to) = window.split('-').map(String::toDouble)
-    val found = SettingsTree().features.singleOrNull { it.id == feature } ?: error("No feature has the id $feature.")
-    val (written, players) = cutFixture(
-        Path.of(capture),
-        Path.of("src/test/resources/features/$feature/$name.jsonl"),
-        from..to,
-        (options["--types"] ?: "system,tablist").split(',').toSet(),
-        found.area,
-        options["--info"]?.split(',').orEmpty(),
-        options["--system"]?.let(::Regex),
-        found.entityFilters,
-    )
+    val types = (options["--types"] ?: "system,tablist").split(',').toSet()
+    val (written, players) = if (feature == DRAGON_API) {
+        cutFixture(Path.of(capture), Path.of("src/test/resources/$feature/$name.jsonl"), from..to, types + "time", Area.END, entities = DRAGON_BODY, raw = dragonRecords())
+    } else {
+        val found = SettingsTree().features.singleOrNull { it.id == feature } ?: error("No feature has the id $feature, and it is not $DRAGON_API.")
+        cutFixture(
+            Path.of(capture),
+            Path.of("src/test/resources/features/$feature/$name.jsonl"),
+            from..to,
+            types,
+            found.area,
+            options["--info"]?.split(',').orEmpty(),
+            options["--system"]?.let(::Regex),
+            found.entityFilters,
+        )
+    }
     println("Wrote $written lines for $feature/$name, with $players players renamed.")
+}
+
+private const val DRAGON_API = "api/dragon"
+
+private val DRAGON_BODY = listOf(EntityFilter(setOf("minecraft:ender_dragon")))
+
+private val DRAGON_BLOCKS = setOf(
+    "end_portal_frame", "beacon", "purple_stained_glass", "purple_stained_glass_pane", "black_concrete", "pearlescent_froglight", "purple_wool",
+    "coal_block", "purple_terracotta",
+).map { "minecraft:$it" }
+
+private val DRAGON_THINGS = setOf("minecraft:ender_dragon", "minecraft:fireball", "minecraft:small_fireball", "minecraft:dragon_fireball", "minecraft:lightning_bolt")
+
+private fun dragonRecords(): (String, JsonObject) -> JsonObject? {
+    val kept = HashSet<String>()
+    fun block(state: JsonElement?) = state?.jsonPrimitive?.content?.substringBefore('[') in DRAGON_BLOCKS
+    return { type, data ->
+        when (type) {
+            "bossbars" -> data
+            "block" -> data.takeIf { block(it["state"]) || block(it["was"]) }
+            "motion" -> JsonObject(
+                data.filter { (id, entry) ->
+                    if (entry is JsonObject) (entry["entity"]?.jsonPrimitive?.content in DRAGON_THINGS).also { if (it) kept += id } else kept.remove(id)
+                },
+            ).takeIf { it.isNotEmpty() }
+            else -> null
+        }
+    }
 }
 
 private fun floating(line: String, shown: MutableMap<String, String>): List<Captured> {

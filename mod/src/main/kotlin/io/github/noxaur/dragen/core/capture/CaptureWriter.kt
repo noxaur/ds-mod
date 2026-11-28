@@ -105,6 +105,8 @@ fun captureLine(time: Long, event: GameEvent, tick: Int? = null): String {
     return line(time, json.getValue("type").jsonPrimitive.content, JsonObject(json - "type"), tick)
 }
 
+fun rawCaptureLine(time: Long, type: String, data: JsonObject, tick: Int?): String = line(time, type, data, tick)
+
 fun readCaptureLine(line: String): Captured? {
     val json = Json.parseToJsonElement(line).jsonObject
     val type = json.getValue("type")
